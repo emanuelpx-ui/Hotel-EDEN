@@ -1,0 +1,9 @@
+services:
+  type: web
+  name: HOTEL EDEN
+  environment: python
+  buildcommand: ""
+  startcommand: gunicorn app:app
+  envVars:
+    - key: port
+      value: "8000"
