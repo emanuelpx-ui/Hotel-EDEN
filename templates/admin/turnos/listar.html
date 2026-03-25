@@ -1,0 +1,129 @@
+{% extends "admin/base.html" %}
+{% block title %}Turnos{% endblock %}
+{% block page_title %}Gestión de Turnos{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div>
+        <h1 style="font-size:22px; font-weight:700; color:#1B2A4A;">Turnos</h1>
+        <p class="page-subtitle">{{ turnos | length }} turno(s) encontrado(s)</p>
+    </div>
+    <a href="{{ url_for('turnos.nuevo') }}" class="btn btn-primary">+ Asignar Turno</a>
+</div>
+
+<!-- Turnos de hoy -->
+<div style="background:white; border-radius:12px; padding:22px;
+            box-shadow:0 2px 10px rgba(0,0,0,0.07); margin-bottom:24px;">
+    <p style="font-size:15px; font-weight:700; color:#1B2A4A; margin-bottom:16px;">
+        🕐 Trabajando Hoy — {{ turnos_hoy | length }} empleado(s)
+    </p>
+
+    {% if turnos_hoy %}
+    <div style="display:flex; flex-wrap:wrap; gap:10px;">
+        {% for t in turnos_hoy %}
+        <div style="background:#e8f5e9; border-radius:10px; padding:12px 16px;
+                    border-left:4px solid #2e7d32; min-width:200px;">
+            <p style="font-size:13.5px; font-weight:700; color:#1B2A4A;">
+                {{ t.empleado }}
+            </p>
+            <p style="font-size:12px; color:#2e7d32; margin-top:3px;">
+                {{ t.rol | title }}
+            </p>
+            <p style="font-size:12px; color:#555; margin-top:4px;">
+                🕐 {{ t.hora_inicio }} — {{ t.hora_fin }}
+            </p>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p style="color:#aaa; font-style:italic; font-size:13.5px;">
+        No hay empleados con turno asignado hoy.
+    </p>
+    {% endif %}
+</div>
+
+<!-- Filtros -->
+<div class="filters-bar">
+    <form method="GET" class="filters-form">
+
+        <select name="empleado_id" onchange="this.form.submit()">
+            <option value="">Todos los empleados</option>
+            {% for e in empleados %}
+            <option value="{{ e.empleado_id }}"
+                {{ 'selected' if filtro_empleado == e.empleado_id|string }}>
+                {{ e.apellido }}, {{ e.nombre }}
+            </option>
+            {% endfor %}
+        </select>
+
+        <input type="date" name="fecha"
+               value="{{ filtro_fecha }}"
+               style="padding:8px 12px; border:1.5px solid #dde1e7;
+                      border-radius:8px; font-size:13.5px; outline:none;"
+               onchange="this.form.submit()">
+
+        {% if filtro_empleado or filtro_fecha %}
+        <a href="{{ url_for('turnos.listar') }}" class="btn btn-secondary btn-sm">
+            Limpiar filtros
+        </a>
+        {% endif %}
+
+    </form>
+</div>
+
+<!-- Tabla -->
+<div class="table-container">
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Empleado</th>
+                <th>Rol</th>
+                <th>Fecha Inicio</th>
+                <th>Hora Inicio</th>
+                <th>Fecha Fin</th>
+                <th>Hora Fin</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for t in turnos %}
+            <tr>
+                <td style="color:#888;">#{{ t.turno_id }}</td>
+                <td><strong>{{ t.empleado }}</strong></td>
+                <td>
+                    <span style="background:#e3f2fd; color:#0d47a1; padding:3px 10px;
+                                 border-radius:20px; font-size:12px; font-weight:600;">
+                        {{ t.rol | title }}
+                    </span>
+                </td>
+                <td>{{ t.fecha_inicio }}</td>
+                <td><strong>{{ t.hora_inicio }}</strong></td>
+                <td>{{ t.fecha_fin }}</td>
+                <td><strong>{{ t.hora_fin }}</strong></td>
+                <td class="actions">
+                    <form method="POST"
+                          action="{{ url_for('turnos.eliminar', turno_id=t.turno_id) }}"
+                          onsubmit="return confirm('¿Eliminar este turno?')"
+                          style="margin:0;">
+                        <button type="submit" class="btn btn-sm btn-danger">Eliminar</button>
+                    </form>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="8" class="empty-row">
+                    {% if filtro_empleado or filtro_fecha %}
+                        No se encontraron turnos con esos filtros.
+                    {% else %}
+                        No hay turnos registrados.
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% endblock %}

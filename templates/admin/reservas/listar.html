@@ -1,0 +1,150 @@
+{% extends "admin/base.html" %}
+{% block title %}Reservas{% endblock %}
+{% block page_title %}Gestión de Reservas{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div>
+        <h1 style="font-size:22px; font-weight:700; color:#1B2A4A;">Reservas</h1>
+        <p class="page-subtitle">{{ reservas | length }} reserva(s) encontrada(s)</p>
+    </div>
+    <a href="{{ url_for('reservas.nueva') }}" class="btn btn-primary">+ Nueva Reserva</a>
+</div>
+
+<!-- Filtros -->
+<div class="filters-bar">
+    <form method="GET" class="filters-form">
+
+        <select name="estado" onchange="this.form.submit()">
+            <option value="">Todos los estados</option>
+            {% for e in estados %}
+            <option value="{{ e }}" {{ 'selected' if filtro_estado == e }}>
+                {{ e | title }}
+            </option>
+            {% endfor %}
+        </select>
+
+        <input type="date" name="fecha_inicio"
+               value="{{ filtro_inicio }}"
+               style="padding:8px 12px; border:1.5px solid #dde1e7;
+                      border-radius:8px; font-size:13.5px; outline:none;"
+               onchange="this.form.submit()">
+
+        <input type="date" name="fecha_fin"
+               value="{{ filtro_fin }}"
+               style="padding:8px 12px; border:1.5px solid #dde1e7;
+                      border-radius:8px; font-size:13.5px; outline:none;"
+               onchange="this.form.submit()">
+
+        {% if filtro_estado or filtro_inicio or filtro_fin %}
+        <a href="{{ url_for('reservas.listar') }}" class="btn btn-secondary btn-sm">
+            Limpiar filtros
+        </a>
+        {% endif %}
+
+    </form>
+</div>
+
+<!-- Tabla -->
+<div class="table-container">
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Cliente</th>
+                <th>Hotel / Hab.</th>
+                <th>Entrada</th>
+                <th>Salida</th>
+                <th>Huéspedes</th>
+                <th>Total</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for r in reservas %}
+            <tr>
+                <td style="color:#888;">#{{ r.reserva_id }}</td>
+                <td>
+                    <strong>{{ r.cliente }}</strong>
+                </td>
+                <td>
+                    {{ r.hotel }}<br>
+                    <small class="text-muted">Hab. {{ r.habitacion }} — {{ r.tipo_hab | title }}</small>
+                </td>
+                <td>{{ r.fecha_inicio }}</td>
+                <td>{{ r.fecha_fin }}</td>
+                <td>
+                    {{ r.num_adultos }}A
+                    {% if r.num_menores %} / {{ r.num_menores }}M {% endif %}
+                    {% if r.num_mascotas %} / {{ r.num_mascotas }}🐾 {% endif %}
+                </td>
+                <td><strong>${{ "{:,.2f}".format(r.total | float) }}</strong></td>
+                <td>
+                    {% if r.estado == 'pendiente' %}
+                        <span style="background:#fff8e1; color:#f57f17; padding:4px 10px;
+                                     border-radius:20px; font-size:12px; font-weight:600;">
+                            ⏳ Pendiente
+                        </span>
+                    {% elif r.estado == 'confirmada' %}
+                        <span style="background:#e8f5e9; color:#2e7d32; padding:4px 10px;
+                                     border-radius:20px; font-size:12px; font-weight:600;">
+                            ✅ Confirmada
+                        </span>
+                    {% elif r.estado == 'cancelada' %}
+                        <span style="background:#fce4ec; color:#c62828; padding:4px 10px;
+                                     border-radius:20px; font-size:12px; font-weight:600;">
+                            ❌ Cancelada
+                        </span>
+                    {% elif r.estado == 'check-in' %}
+                        <span style="background:#e3f2fd; color:#0d47a1; padding:4px 10px;
+                                     border-radius:20px; font-size:12px; font-weight:600;">
+                            🏨 Check-in
+                        </span>
+                    {% elif r.estado == 'check-out' %}
+                        <span style="background:#f3e5f5; color:#6a1b9a; padding:4px 10px;
+                                     border-radius:20px; font-size:12px; font-weight:600;">
+                            🚪 Check-out
+                        </span>
+                    {% elif r.estado == 'finalizada' %}
+                        <span style="background:#efebe9; color:#4e342e; padding:4px 10px;
+                                     border-radius:20px; font-size:12px; font-weight:600;">
+                            🏁 Finalizada
+                        </span>
+                    {% elif r.estado == 'no-show' %}
+                        <span style="background:#ffebee; color:#b71c1c; padding:4px 10px;
+                                     border-radius:20px; font-size:12px; font-weight:600;">
+                            👻 No-show
+                        </span>
+                    {% endif %}
+                </td>
+                <td class="actions">
+                    <a href="{{ url_for('reservas.detalle', reserva_id=r.reserva_id) }}"
+                       class="btn btn-sm btn-secondary">Ver</a>
+                    <a href="{{ url_for('reservas.editar', reserva_id=r.reserva_id) }}"
+                       class="btn btn-sm btn-primary">Editar</a>
+                    <form method="POST"
+                          action="{{ url_for('reservas.eliminar', reserva_id=r.reserva_id) }}"
+                          onsubmit="return confirm('¿Eliminar reserva #{{ r.reserva_id }}?')"
+                          style="margin:0;">
+                        <button type="submit" class="btn btn-sm btn-danger">Eliminar</button>
+                    </form>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="9" class="empty-row">
+                    {% if filtro_estado or filtro_inicio or filtro_fin %}
+                        No se encontraron reservas con esos filtros.
+                    {% else %}
+                        No hay reservas registradas aún.
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% endblock %}

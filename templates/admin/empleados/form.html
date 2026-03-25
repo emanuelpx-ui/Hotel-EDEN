@@ -1,0 +1,90 @@
+{% extends "admin/base.html" %}
+{% block title %}{{ 'Editar' if empleado else 'Nuevo' }} Empleado{% endblock %}
+{% block page_title %}{{ 'Editar Empleado' if empleado else 'Nuevo Empleado' }}{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div>
+        <h1 style="font-size:22px; font-weight:700; color:#1B2A4A;">
+            {{ 'Editar Empleado' if empleado else 'Registrar Nuevo Empleado' }}
+        </h1>
+        <p class="page-subtitle">
+            {% if empleado %}
+                Modificando: {{ empleado.nombre }} {{ empleado.apellido }}
+            {% else %}
+                Completa los datos del nuevo empleado
+            {% endif %}
+        </p>
+    </div>
+    <a href="{{ url_for('empleados.listar') }}" class="btn btn-secondary">← Volver</a>
+</div>
+
+<div class="form-card">
+    <form method="POST">
+        <div class="form-grid">
+
+            <div class="form-group">
+                <label>Nombre <span class="required">*</span></label>
+                <input type="text" name="nombre" required
+                       placeholder="Ej. Carlos"
+                       value="{{ empleado.nombre if empleado else '' }}">
+            </div>
+
+            <div class="form-group">
+                <label>Apellido <span class="required">*</span></label>
+                <input type="text" name="apellido" required
+                       placeholder="Ej. Ramírez"
+                       value="{{ empleado.apellido if empleado else '' }}">
+            </div>
+
+            <div class="form-group">
+                <label>Email <span class="required">*</span></label>
+                <input type="email" name="email" required
+                       placeholder="Ej. carlos@hotel.com"
+                       value="{{ empleado.email if empleado else '' }}">
+            </div>
+
+            <div class="form-group">
+                <label>Teléfono</label>
+                <input type="text" name="telefono"
+                       placeholder="Ej. 2221234567"
+                       value="{{ empleado.telefono if empleado else '' }}">
+            </div>
+
+            <div class="form-group full">
+                <label>Rol <span class="required">*</span></label>
+                <select name="rol_id" required>
+                    <option value="">Selecciona un rol...</option>
+                    {% for r in roles %}
+                    <option value="{{ r.rol_id }}"
+                        {{ 'selected' if empleado and empleado.rol_id == r.rol_id }}>
+                        {{ r.nombre | title }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">
+                {{ '💾 Guardar Cambios' if empleado else '✅ Registrar Empleado' }}
+            </button>
+            <a href="{{ url_for('empleados.listar') }}" class="btn btn-secondary">
+                Cancelar
+            </a>
+            {% if empleado %}
+            <form method="POST"
+                  action="{{ url_for('empleados.eliminar', empleado_id=empleado.empleado_id) }}"
+                  onsubmit="return confirm('¿Eliminar a {{ empleado.nombre }}?')"
+                  style="margin:0;">
+                <button type="submit" class="btn btn-danger">🗑️ Eliminar Empleado</button>
+            </form>
+            {% endif %}
+        </div>
+
+    </form>
+</div>
+
+{% endblock %}

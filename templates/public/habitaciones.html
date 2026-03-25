@@ -1,0 +1,136 @@
+{% extends "public/base.html" %}
+{% block title %}Habitaciones — Hotel Eden{% endblock %}
+
+{% block content %}
+
+<!-- Header -->
+<div style="background:linear-gradient(135deg, #0f1e35 0%, #1B2A4A 100%);
+            padding:50px 48px; text-align:center;">
+    <h1 style="font-size:34px; font-weight:800; color:white;">
+        🛏️ Nuestras <span style="color:#C9A84C;">Habitaciones</span>
+    </h1>
+    <p style="color:rgba(255,255,255,0.6); margin-top:10px; font-size:15px;">
+        Encuentra la habitación perfecta para tu estancia
+    </p>
+</div>
+
+<div class="section">
+
+    <!-- Filtros -->
+    <div style="background:white; border-radius:12px; padding:20px 24px;
+                box-shadow:0 4px 16px rgba(0,0,0,0.07); margin-bottom:28px;
+                display:flex; gap:14px; align-items:center; flex-wrap:wrap;">
+
+        <form method="GET" style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+
+            <select name="tipo" onchange="this.form.submit()"
+                    style="padding:9px 14px; border:1.5px solid #dde1e7;
+                           border-radius:8px; font-size:14px; outline:none;">
+                <option value="">Todos los tipos</option>
+                {% for t in tipos %}
+                <option value="{{ t }}" {{ 'selected' if filtro_tipo == t }}>
+                    {{ t | title }}
+                </option>
+                {% endfor %}
+            </select>
+
+            <label style="display:flex; align-items:center; gap:8px;
+                          font-size:14px; cursor:pointer; color:#1B2A4A; font-weight:500;">
+                <input type="checkbox" name="mascotas" value="1"
+                       {{ 'checked' if filtro_mascotas }}
+                       onchange="this.form.submit()"
+                       style="width:17px; height:17px; accent-color:#C9A84C;">
+                🐾 Solo pet friendly
+            </label>
+
+            {% if filtro_tipo or filtro_mascotas %}
+            <a href="{{ url_for('public.habitaciones') }}"
+               style="font-size:13.5px; color:#888; text-decoration:none;">
+                Limpiar filtros ✕
+            </a>
+            {% endif %}
+
+        </form>
+
+        <span style="margin-left:auto; font-size:13.5px; color:#888;">
+            {{ habitaciones | length }} habitación(es) disponible(s)
+        </span>
+
+    </div>
+
+    <!-- Grid de habitaciones -->
+    {% if habitaciones %}
+    <div class="cards-grid">
+        {% for h in habitaciones %}
+        <div class="card">
+            <!-- Placeholder imagen -->
+            <div style="height:170px;
+                        background:linear-gradient(135deg, #1B2A4A 0%, #2d4a7a 100%);
+                        display:flex; align-items:center; justify-content:center;
+                        position:relative;">
+                <span style="font-size:52px;">🛏️</span>
+                <div style="position:absolute; top:12px; right:12px;">
+                    {% if h.permite_mascotas %}
+                    <span class="badge badge-green">🐾 Pet friendly</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card-body">
+                <div style="display:flex; justify-content:space-between; align-items:start;">
+                    <h3 class="card-title">{{ h.tipo | title }}</h3>
+                    <span class="badge badge-gold">{{ h.hotel_nombre }}</span>
+                </div>
+
+                <p class="card-text" style="margin-top:6px;">
+                    Hab. {{ h.numero }}
+                    {% if h.piso %} · Piso {{ h.piso }}{% endif %}
+                </p>
+
+                <div style="display:flex; gap:12px; margin:12px 0;
+                            padding:10px 0; border-top:1px solid #f0f2f5;
+                            border-bottom:1px solid #f0f2f5;">
+                    <span style="font-size:13px; color:#555;">
+                        👤 {{ h.capacidad_adultos }} adultos
+                    </span>
+                    {% if h.capacidad_menores %}
+                    <span style="font-size:13px; color:#555;">
+                        👦 {{ h.capacidad_menores }} menores
+                    </span>
+                    {% endif %}
+                </div>
+
+                <p class="card-price">
+                    ${{ "{:,.2f}".format(h.precio_base | float) }}
+                    <span style="font-size:13px; color:#888; font-weight:400;">/noche</span>
+                </p>
+
+                <a href="{{ url_for('public.reservar') }}?habitacion_id={{ h.habitacion_id }}"
+                   class="btn btn-gold" style="width:100%; justify-content:center;">
+                    Reservar Ahora
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% else %}
+    <div style="text-align:center; padding:60px; background:white;
+                border-radius:14px; box-shadow:0 4px 16px rgba(0,0,0,0.07);">
+        <p style="font-size:48px; margin-bottom:16px;">🛏️</p>
+        <p style="font-size:17px; font-weight:600; color:#1B2A4A;">
+            No hay habitaciones disponibles
+        </p>
+        <p style="color:#aaa; margin-top:8px; font-size:14px;">
+            Prueba con otros filtros o consulta más tarde.
+        </p>
+        <a href="{{ url_for('public.habitaciones') }}"
+           class="btn btn-gold" style="margin-top:20px;">
+            Ver todas las habitaciones
+        </a>
+    </div>
+    {% endif %}
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,79 @@
+{% extends "admin/base.html" %}
+{% block title %}Clientes{% endblock %}
+{% block page_title %}Gestión de Clientes{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div>
+        <h1 style="font-size:22px; font-weight:700; color:#1B2A4A;">Clientes</h1>
+        <p class="page-subtitle">{{ clientes | length }} cliente(s) encontrado(s)</p>
+    </div>
+    <a href="{{ url_for('clientes.nuevo') }}" class="btn btn-primary">+ Nuevo Cliente</a>
+</div>
+
+<!-- Buscador -->
+<div class="search-bar">
+    <form method="GET">
+        <input type="text" name="q" value="{{ busqueda }}"
+               placeholder="Buscar por nombre, apellido o email...">
+        <button type="submit" class="btn btn-primary">Buscar</button>
+        {% if busqueda %}
+            <a href="{{ url_for('clientes.listar') }}" class="btn btn-secondary">Limpiar</a>
+        {% endif %}
+    </form>
+</div>
+
+<!-- Tabla -->
+<div class="table-container">
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nombre</th>
+                <th>Email</th>
+                <th>Teléfono</th>
+                <th>Fecha Nacimiento</th>
+                <th>Fecha Registro</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for c in clientes %}
+            <tr>
+                <td style="color:#888;">#{{ c.cliente_id }}</td>
+                <td>
+                    <strong>{{ c.apellido }}, {{ c.nombre }}</strong>
+                </td>
+                <td>{{ c.email or '—' }}</td>
+                <td>{{ c.telefono or '—' }}</td>
+                <td>{{ c.fecha_nacimiento or '—' }}</td>
+                <td>{{ c.fecha_registro }}</td>
+                <td class="actions">
+                    <a href="{{ url_for('clientes.detalle', cliente_id=c.cliente_id) }}"
+                       class="btn btn-sm btn-secondary">Ver</a>
+                    <a href="{{ url_for('clientes.editar', cliente_id=c.cliente_id) }}"
+                       class="btn btn-sm btn-primary">Editar</a>
+                    <form method="POST"
+                          action="{{ url_for('clientes.eliminar', cliente_id=c.cliente_id) }}"
+                          onsubmit="return confirm('¿Eliminar a {{ c.nombre }} {{ c.apellido }}? Esta acción no se puede deshacer.')">
+                        <button type="submit" class="btn btn-sm btn-danger">Eliminar</button>
+                    </form>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="7" class="empty-row">
+                    {% if busqueda %}
+                        No se encontraron clientes con "{{ busqueda }}".
+                    {% else %}
+                        No hay clientes registrados aún.
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% endblock %}

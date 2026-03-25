@@ -1,0 +1,172 @@
+{% extends "public/base.html" %}
+{% block title %}Reservar — Hotel Eden{% endblock %}
+
+{% block content %}
+
+<!-- Header -->
+<div style="background:linear-gradient(135deg, #0f1e35 0%, #1B2A4A 100%);
+            padding:50px 48px; text-align:center;">
+    <h1 style="font-size:34px; font-weight:800; color:white;">
+        📅 Hacer una <span style="color:#C9A84C;">Reserva</span>
+    </h1>
+    <p style="color:rgba(255,255,255,0.6); margin-top:10px; font-size:15px;">
+        Completa los datos para reservar tu habitación
+    </p>
+</div>
+
+<div class="section">
+    <div class="form-card">
+        
+        <form method="POST" id="form-reserva">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+            <!-- Campo oculto cliente_id -->
+            {% if cliente %}
+            <input type="hidden" name="cliente_id" value="{{ cliente.cliente_id }}">
+            {% else %}
+            <div class="form-group full" style="margin-bottom:18px;">
+                <div style="background:#fff3e0; border-radius:8px; padding:14px;
+                            border-left:4px solid #e65100; font-size:13.5px; color:#bf360c;">
+                    ⚠️ No encontramos tu perfil de cliente vinculado.
+                    Contacta a recepción para completar tu registro.
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="form-grid">
+
+                <!-- Habitación -->
+                <div class="form-group full">
+                    <label>Habitación <span class="required">*</span></label>
+                    <select name="habitacion_id" id="select-habitacion" required>
+                        <option value="">Selecciona una habitación...</option>
+                        {% for h in habitaciones %}
+                        <option value="{{ h.habitacion_id }}"
+                                data-precio="{{ h.precio_base }}"
+                            {{ 'selected' if habitacion_id and habitacion_id == h.habitacion_id|string }}>
+                            {{ h.hotel_nombre }} · Hab. {{ h.numero }}
+                            ({{ h.tipo | title }})
+                            — ${{ "{:,.2f}".format(h.precio_base | float) }}/noche
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Fecha entrada -->
+                <div class="form-group">
+                    <label>Fecha de Entrada <span class="required">*</span></label>
+                    <input type="date" name="fecha_inicio" id="fecha-inicio"
+                           required value="{{ today }}">
+                </div>
+
+                <!-- Fecha salida -->
+                <div class="form-group">
+                    <label>Fecha de Salida <span class="required">*</span></label>
+                    <input type="date" name="fecha_fin" id="fecha-fin" required>
+                </div>
+
+                <!-- Adultos -->
+                <div class="form-group">
+                    <label>Número de Adultos</label>
+                    <input type="number" name="num_adultos" min="1" max="10" value="1">
+                </div>
+
+                <!-- Menores -->
+                <div class="form-group">
+                    <label>Número de Menores</label>
+                    <input type="number" name="num_menores" min="0" max="10" value="0">
+                </div>
+
+                <!-- Mascotas -->
+                <div class="form-group">
+                    <label>Número de Mascotas</label>
+                    <input type="number" name="num_mascotas" min="0" max="5" value="0">
+                </div>
+
+                <!-- Total calculado -->
+                <div class="form-group">
+                    <label>Total Estimado</label>
+                    <input type="number" step="0.01" name="total"
+                           id="input-total" readonly
+                           placeholder="Se calcula automáticamente"
+                           value="0.00">
+                </div>
+
+                <!-- Resumen -->
+                <div class="form-group full">
+                    <div id="resumen-reserva"
+                         style="background:#f8f6f0; border-radius:10px;
+                                padding:14px; font-size:13.5px; color:#555;
+                                display:none;">
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-gold"
+                        style="font-size:15px; padding:12px 28px;">
+                    ✅ Confirmar Reserva
+                </button>
+                <a href="{{ url_for('public.habitaciones') }}"
+                   class="btn btn-outline-gold">
+                    Ver habitaciones
+                </a>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const selectHab  = document.getElementById('select-habitacion');
+    const fechaIn    = document.getElementById('fecha-inicio');
+    const fechaOut   = document.getElementById('fecha-fin');
+    const inputTotal = document.getElementById('input-total');
+    const resumen    = document.getElementById('resumen-reserva');
+
+    function calcular() {
+        const opcion = selectHab.options[selectHab.selectedIndex];
+        const precio = parseFloat(opcion?.dataset?.precio || 0);
+        const inicio = new Date(fechaIn.value);
+        const fin    = new Date(fechaOut.value);
+
+        if (!precio || isNaN(inicio) || isNaN(fin) || fin <= inicio) {
+            resumen.style.display = 'none';
+            inputTotal.value = '0.00';
+            return;
+        }
+
+        const noches = Math.ceil((fin - inicio) / (1000 * 60 * 60 * 24));
+        const total  = noches * precio;
+
+        inputTotal.value = total.toFixed(2);
+        resumen.style.display = 'block';
+        resumen.innerHTML = `
+            🛏️ <strong>${opcion.text.split('—')[0].trim()}</strong><br>
+            📅 ${noches} noche(s) × $${precio.toLocaleString('es-MX')} =
+            <strong style="color:#C9A84C; font-size:16px;">
+                $${total.toLocaleString('es-MX', {minimumFractionDigits:2})}
+            </strong>
+        `;
+    }
+
+    // Validar fechas
+    document.getElementById('form-reserva').addEventListener('submit', e => {
+        const inicio = new Date(fechaIn.value);
+        const fin    = new Date(fechaOut.value);
+        if (fin <= inicio) {
+            e.preventDefault();
+            alert('La fecha de salida debe ser posterior a la de entrada.');
+            fechaOut.focus();
+        }
+    });
+
+    selectHab.addEventListener('change', calcular);
+    fechaIn.addEventListener('change', calcular);
+    fechaOut.addEventListener('change', calcular);
+</script>
+{% endblock %}

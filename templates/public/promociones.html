@@ -1,0 +1,87 @@
+{% extends "public/base.html" %}
+{% block title %}Promociones — Hotel Eden{% endblock %}
+
+{% block content %}
+
+<!-- Header -->
+<div style="background:linear-gradient(135deg, #0f1e35 0%, #1B2A4A 100%);
+            padding:50px 48px; text-align:center;">
+    <h1 style="font-size:34px; font-weight:800; color:white;">
+        🎁 <span style="color:#C9A84C;">Promociones</span> Vigentes
+    </h1>
+    <p style="color:rgba(255,255,255,0.6); margin-top:10px; font-size:15px;">
+        Aprovecha nuestras ofertas especiales y ahorra en tu próxima estancia
+    </p>
+</div>
+
+<div class="section">
+
+    {% if promociones %}
+    <div class="cards-grid">
+        {% for p in promociones %}
+        <div class="card" style="border-top:4px solid #C9A84C;">
+            <div class="card-body">
+
+                <!-- Descuento badge grande -->
+                <div style="display:flex; justify-content:space-between;
+                            align-items:center; margin-bottom:16px;">
+                    <span style="font-size:40px;">🎁</span>
+                    <div style="background:#fff8e1; color:#c47f00; padding:10px 18px;
+                                border-radius:12px; text-align:center;">
+                        <p style="font-size:28px; font-weight:800; line-height:1;">
+                            {{ p.descuento }}%
+                        </p>
+                        <p style="font-size:11px; font-weight:600; letter-spacing:1px;">
+                            DESCUENTO
+                        </p>
+                    </div>
+                </div>
+
+                <h3 class="card-title">{{ p.hotel_nombre }}</h3>
+                <p class="card-text" style="margin-top:6px;">{{ p.descripcion }}</p>
+
+                <!-- Fechas -->
+                <div style="background:#f8f6f0; border-radius:8px; padding:12px;
+                            margin:14px 0; font-size:13px; color:#555;">
+                    <div style="display:flex; justify-content:space-between;">
+                        <span>📅 Inicio</span>
+                        <strong>{{ p.fecha_inicio }}</strong>
+                    </div>
+                    <div style="display:flex; justify-content:space-between;
+                                margin-top:6px;">
+                        <span>📅 Vence</span>
+                        <strong>{{ p.fecha_fin }}</strong>
+                    </div>
+                </div>
+
+                <a href="{{ url_for('public.reservar') }}"
+                   class="btn btn-gold"
+                   style="width:100%; justify-content:center;">
+                    Reservar con descuento
+                </a>
+
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% else %}
+    <div style="text-align:center; padding:60px; background:white;
+                border-radius:14px; box-shadow:0 4px 16px rgba(0,0,0,0.07);">
+        <p style="font-size:48px; margin-bottom:16px;">🎁</p>
+        <p style="font-size:17px; font-weight:600; color:#1B2A4A;">
+            No hay promociones vigentes en este momento
+        </p>
+        <p style="color:#aaa; margin-top:8px; font-size:14px;">
+            Vuelve pronto para ver nuestras próximas ofertas.
+        </p>
+        <a href="{{ url_for('public.habitaciones') }}"
+           class="btn btn-gold" style="margin-top:20px;">
+            Ver habitaciones disponibles
+        </a>
+    </div>
+    {% endif %}
+
+</div>
+
+{% endblock %}

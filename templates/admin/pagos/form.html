@@ -1,0 +1,81 @@
+{% extends "admin/base.html" %}
+{% block title %}Registrar Pago{% endblock %}
+{% block page_title %}Registrar Pago{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div>
+        <h1 style="font-size:22px; font-weight:700; color:#1B2A4A;">Registrar Pago</h1>
+        <p class="page-subtitle">Completa los datos del nuevo pago</p>
+    </div>
+    <a href="{{ url_for('pagos.listar') }}" class="btn btn-secondary">← Volver</a>
+</div>
+
+<div class="form-card">
+    <form method="POST">
+        <div class="form-grid">
+
+            <!-- Reserva -->
+            <div class="form-group full">
+                <label>Reserva <span class="required">*</span></label>
+                <select name="reserva_id" required>
+                    <option value="">Selecciona una reserva...</option>
+                    {% for r in reservas %}
+                    <option value="{{ r.reserva_id }}"
+                        {{ 'selected' if reserva_id and reserva_id == r.reserva_id }}>
+                        #{{ r.reserva_id }} — {{ r.cliente }} —
+                        {{ r.hotel }} Hab. {{ r.habitacion }} —
+                        Total: ${{ "{:,.2f}".format(r.total | float) }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Monto -->
+            <div class="form-group">
+                <label>Monto <span class="required">*</span></label>
+                <input type="number" step="0.01" min="0.01"
+                       name="monto" required
+                       placeholder="Ej. 1200.00">
+            </div>
+
+            <!-- Fecha -->
+            <div class="form-group">
+                <label>Fecha de Pago <span class="required">*</span></label>
+                <input type="date" name="fecha_pago" required
+                       value="{{ today }}">
+            </div>
+
+            <!-- Método -->
+            <div class="form-group">
+                <label>Método de Pago <span class="required">*</span></label>
+                <select name="metodo" required>
+                    {% for m in metodos %}
+                    <option value="{{ m }}">{{ m | title }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Notas -->
+            <div class="form-group">
+                <label>Notas</label>
+                <input type="text" name="notas"
+                       placeholder="Ej. Anticipo, pago parcial...">
+            </div>
+
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">
+                💳 Registrar Pago
+            </button>
+            <a href="{{ url_for('pagos.listar') }}" class="btn btn-secondary">
+                Cancelar
+            </a>
+        </div>
+
+    </form>
+</div>
+
+{% endblock %}

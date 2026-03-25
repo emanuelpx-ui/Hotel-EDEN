@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>{% block title %}Hotel Eden{% endblock %} — Panel Admin</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #F0F2F5;
+            color: #1B2A4A;
+        }
+
+        /* ── LAYOUT ── */
+        .layout {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* ── SIDEBAR ── */
+        .sidebar {
+            width: 250px;
+            background: linear-gradient(180deg, #0f1e35 0%, #1B2A4A 100%);
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            top: 0; left: 0;
+            height: 100vh;
+            z-index: 100;
+            box-shadow: 4px 0 15px rgba(0,0,0,0.2);
+        }
+
+        /* Logo */
+        .sidebar-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 22px 20px;
+            border-bottom: 1px solid rgba(201,168,76,0.2);
+        }
+
+        .sidebar-logo img {
+            width: 42px;
+            height: 42px;
+            object-fit: contain;
+        }
+
+        .sidebar-logo div h2 {
+            font-size: 15px;
+            font-weight: 700;
+            color: #C9A84C;
+            letter-spacing: 1.5px;
+        }
+
+        .sidebar-logo div p {
+            font-size: 10px;
+            color: rgba(255,255,255,0.35);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        /* Usuario */
+        .sidebar-user {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 14px 20px;
+            background: rgba(0,0,0,0.2);
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+
+        .user-avatar {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: #C9A84C;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 700;
+            color: #1B2A4A;
+            flex-shrink: 0;
+        }
+
+        .sidebar-user .user-name {
+            font-size: 13px;
+            font-weight: 600;
+            color: white;
+        }
+
+        .sidebar-user .user-role {
+            font-size: 11px;
+            color: #C9A84C;
+            text-transform: capitalize;
+        }
+
+        /* Navegación */
+        .sidebar-nav {
+            flex: 1;
+            padding: 16px 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            overflow-y: auto;
+        }
+
+        .nav-section {
+            font-size: 10px;
+            font-weight: 700;
+            color: rgba(255,255,255,0.25);
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            padding: 12px 10px 6px;
+        }
+
+        .sidebar-nav a {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 14px;
+            border-radius: 8px;
+            color: rgba(255,255,255,0.65);
+            text-decoration: none;
+            font-size: 13.5px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .sidebar-nav a:hover {
+            background: rgba(201,168,76,0.12);
+            color: #C9A84C;
+        }
+
+        .sidebar-nav a.active {
+            background: rgba(201,168,76,0.18);
+            color: #C9A84C;
+            font-weight: 600;
+            border-left: 3px solid #C9A84C;
+        }
+
+        .sidebar-nav a .icon { font-size: 16px; width: 20px; text-align: center; }
+
+        /* Logout */
+        .sidebar-footer {
+            padding: 14px 12px;
+            border-top: 1px solid rgba(255,255,255,0.08);
+        }
+
+        .logout-btn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 14px;
+            border-radius: 8px;
+            color: rgba(255,255,255,0.5);
+            text-decoration: none;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+
+        .logout-btn:hover {
+            background: rgba(180,0,0,0.25);
+            color: #ff6b6b;
+        }
+
+        /* ── MAIN CONTENT ── */
+        .main-content {
+            margin-left: 250px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* Topbar */
+        .topbar {
+            background: white;
+            padding: 14px 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #e8eaed;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+
+        .topbar-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1B2A4A;
+        }
+
+        .topbar-date {
+            font-size: 12.5px;
+            color: #888;
+        }
+
+        /* Contenido de la página */
+        .page-body {
+            padding: 28px 32px;
+            flex: 1;
+        }
+
+        /* ── FLASH MESSAGES ── */
+        .flash-container { margin-bottom: 20px; }
+
+        .flash {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            font-size: 13.5px;
+            font-weight: 500;
+        }
+
+        .flash-success { background: #e8f5e9; color: #1b5e20; border-left: 4px solid #2e7d32; }
+        .flash-danger  { background: #fce4ec; color: #7b0000; border-left: 4px solid #c62828; }
+        .flash-warning { background: #fff3e0; color: #bf360c; border-left: 4px solid #e65100; }
+        .flash-info    { background: #e3f2fd; color: #0d47a1; border-left: 4px solid #1565c0; }
+
+        /* ── BOTONES GLOBALES ── */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 9px 18px;
+            border-radius: 7px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 13.5px;
+            text-decoration: none;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .btn-primary   { background: #1B2A4A; color: #C9A84C; }
+        .btn-primary:hover { background: #C9A84C; color: #1B2A4A; }
+
+        .btn-secondary { background: #f0f2f5; color: #1B2A4A; }
+        .btn-secondary:hover { background: #dde1e7; }
+
+        .btn-danger    { background: #c62828; color: white; }
+        .btn-danger:hover { background: #8b0000; }
+
+        .btn-outline {
+            background: transparent;
+            color: #1B2A4A;
+            border: 2px solid #1B2A4A;
+        }
+        .btn-outline:hover { background: #1B2A4A; color: #C9A84C; }
+
+        .btn-sm { padding: 5px 12px; font-size: 12.5px; }
+        .btn-block { width: 100%; justify-content: center; }
+
+        /* ── TABLAS ── */
+        .table-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+            overflow: hidden;
+        }
+
+        .data-table { width: 100%; border-collapse: collapse; }
+
+        .data-table thead { background: #1B2A4A; }
+
+        .data-table th {
+            padding: 13px 16px;
+            text-align: left;
+            font-size: 12px;
+            font-weight: 600;
+            color: #C9A84C;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+
+        .data-table td {
+            padding: 12px 16px;
+            border-bottom: 1px solid #f0f2f5;
+            font-size: 13.5px;
+            vertical-align: middle;
+        }
+
+        .data-table tbody tr:hover { background: #fafbfc; }
+        .data-table tbody tr:last-child td { border-bottom: none; }
+
+        .empty-row {
+            text-align: center;
+            color: #aaa;
+            padding: 40px !important;
+            font-style: italic;
+        }
+
+        .actions { display: flex; gap: 8px; align-items: center; }
+        .actions form { margin: 0; }
+
+        /* ── BADGES ── */
+        .badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 11.5px;
+            font-weight: 600;
+        }
+
+        .badge-disponible    { background: #e8f5e9; color: #2e7d32; }
+        .badge-ocupada       { background: #fce4ec; color: #880e4f; }
+        .badge-reservada     { background: #e3f2fd; color: #0d47a1; }
+        .badge-mantenimiento { background: #fff3e0; color: #e65100; }
+        .badge-limpieza      { background: #f3e5f5; color: #6a1b9a; }
+        .badge-bloqueada     { background: #efebe9; color: #4e342e; }
+        .badge-pendiente     { background: #fff8e1; color: #f57f17; }
+        .badge-confirmada    { background: #e8f5e9; color: #2e7d32; }
+        .badge-cancelada     { background: #fce4ec; color: #880e4f; }
+        .badge-checkin       { background: #e3f2fd; color: #0d47a1; }
+        .badge-checkout      { background: #f3e5f5; color: #6a1b9a; }
+        .badge-finalizada    { background: #efebe9; color: #4e342e; }
+        .badge-noshow        { background: #ffebee; color: #b71c1c; }
+
+        /* ── FORMULARIOS ── */
+        .form-card {
+            background: white;
+            border-radius: 12px;
+            padding: 32px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+            max-width: 860px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .form-group { display: flex; flex-direction: column; gap: 5px; }
+        .form-group.full { grid-column: 1 / -1; }
+
+        .form-group label {
+            font-size: 12.5px;
+            font-weight: 600;
+            color: #1B2A4A;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+        }
+
+        .required { color: #c62828; }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            padding: 10px 13px;
+            border: 1.5px solid #dde1e7;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            background: white;
+            color: #1B2A4A;
+            transition: all 0.2s;
+            outline: none;
+            width: 100%;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            border-color: #C9A84C;
+            box-shadow: 0 0 0 3px rgba(201,168,76,0.15);
+        }
+
+        .form-group textarea { resize: vertical; min-height: 90px; }
+
+        .checkbox-group label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            text-transform: none;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: 17px;
+            height: 17px;
+            accent-color: #C9A84C;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            margin-top: 28px;
+            padding-top: 22px;
+            border-top: 1px solid #f0f2f5;
+            flex-wrap: wrap;
+        }
+
+        .form-actions form { margin: 0; }
+
+        /* ── PAGE HEADER ── */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 24px;
+        }
+
+        .page-header h1 {
+            font-size: 22px;
+            font-weight: 700;
+            color: #1B2A4A;
+        }
+
+        .page-subtitle {
+            color: #888;
+            font-size: 13px;
+            margin-top: 3px;
+        }
+
+        /* ── SEARCH & FILTERS ── */
+        .search-bar { margin-bottom: 18px; }
+
+        .search-bar form {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .search-bar input {
+            flex: 1;
+            max-width: 380px;
+            padding: 9px 14px;
+            border: 1.5px solid #dde1e7;
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        .search-bar input:focus {
+            border-color: #C9A84C;
+            box-shadow: 0 0 0 3px rgba(201,168,76,0.12);
+        }
+
+        .filters-bar { margin-bottom: 18px; }
+
+        .filters-form {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .filters-form select {
+            padding: 8px 14px;
+            border: 1.5px solid #dde1e7;
+            border-radius: 8px;
+            font-size: 13.5px;
+            background: white;
+            cursor: pointer;
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        .filters-form select:focus { border-color: #C9A84C; }
+
+        .text-muted { color: #aaa; font-size: 12px; }
+    </style>
+</head>
+<body>
+
+<div class="layout">
+
+    <!-- ── SIDEBAR ── -->
+    <aside class="sidebar">
+
+        <div class="sidebar-logo">
+            <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Eden">
+            <div>
+                <h2>HOTEL EDEN</h2>
+                <p>Panel Administrativo</p>
+            </div>
+        </div>
+
+        <div class="sidebar-user">
+            <div class="user-avatar">
+                {{ session.get('username', 'U')[0] | upper }}
+            </div>
+            <div>
+                <p class="user-name">{{ session.get('username', 'Usuario') }}</p>
+                <p class="user-role">{{ session.get('rol', '') }}</p>
+            </div>
+        </div>
+
+        <nav class="sidebar-nav">
+
+            <span class="nav-section">General</span>
+            <a href="{{ url_for('dashboard.index') }}"
+               class="{{ 'active' if request.endpoint == 'dashboard.index' }}">
+                <span class="icon">📊</span> Dashboard
+            </a>
+
+            <span class="nav-section">Operaciones</span>
+            <a href="{{ url_for('reservas.listar') }}" class="{{ 'active' if request.blueprint == 'reservas' }}">
+                <span class="icon">📅</span> Reservas
+            </a>
+            <a href="{{ url_for('habitaciones.listar') }}" class="{{ 'active' if request.blueprint == 'habitaciones' }}">
+                <span class="icon">🛏️</span> Habitaciones
+            </a>
+            <a href="{{ url_for('clientes.listar') }}" class="{{ 'active' if request.blueprint == 'clientes' }}">
+                <span class="icon">👥</span> Clientes
+            </a>
+            <a href="{{ url_for('pagos.listar') }}" class="{{ 'active' if request.blueprint == 'pagos' }}">
+                <span class="icon">💳</span> Pagos
+            </a>
+
+            <span class="nav-section">Servicios</span>
+            <a href="{{ url_for('servicios.listar') }}"
+                class="{{ 'active' if request.blueprint == 'servicios' }}">
+                <span class="icon">🍽️</span> Servicios
+            </a>
+
+            <a href="{{ url_for('consumos.listar') }}"
+                class="{{ 'active' if request.blueprint == 'consumos' }}">
+                <span class="icon">🧾</span> Consumos
+            </a>
+            <a href="{{ url_for('empleados.listar') }}"
+                class="{{ 'active' if request.blueprint == 'empleados' }}">
+                <span class="icon">👔</span> Empleados
+            </a>
+            <a href="{{ url_for('turnos.listar') }}"
+                class="{{ 'active' if request.blueprint == 'turnos' }}">
+                <span class="icon">🕐</span> Turnos
+            </a>
+
+            <a href="{{ url_for('logs.listar') }}"
+                class="{{ 'active' if request.blueprint == 'logs' }}">
+                <span class="icon">📋</span> Logs de Acceso
+            </a>
+
+        </nav>
+
+        <div class="sidebar-footer">
+            <a href="{{ url_for('auth.logout') }}" class="logout-btn">
+                <span class="icon">🚪</span> Cerrar Sesión
+            </a>
+        </div>
+
+    </aside>
+
+    <!-- ── MAIN ── -->
+    <div class="main-content">
+
+        <div class="topbar">
+            <span class="topbar-title">{% block page_title %}{% endblock %}</span>
+            <span class="topbar-date" id="fecha-actual"></span>
+        </div>
+
+        <div class="page-body">
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <div class="flash-container">
+                    {% for category, message in messages %}
+                        <div class="flash flash-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+
+            {% block content %}{% endblock %}
+
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+    // Fecha en topbar
+    const fecha = new Date();
+    const opciones = { weekday:'long', year:'numeric', month:'long', day:'numeric' };
+    document.getElementById('fecha-actual').textContent =
+        fecha.toLocaleDateString('es-MX', opciones);
+
+    // Auto-ocultar flash messages
+    setTimeout(() => {
+        document.querySelectorAll('.flash').forEach(f => {
+            f.style.transition = 'opacity 0.5s';
+            f.style.opacity = '0';
+            setTimeout(() => f.remove(), 500);
+        });
+    }, 4000);
+
+        // Agregar CSRF token a todos los formularios automáticamente
+    document.querySelectorAll('form').forEach(form => {
+        if (!form.querySelector('input[name="csrf_token"]')) {
+            const input = document.createElement('input');
+            input.type  = 'hidden';
+            input.name  = 'csrf_token';
+            input.value = document.querySelector('meta[name="csrf-token"]').content;
+            form.appendChild(input);
+        }
+    });
+</script>
+
+{% block scripts %}{% endblock %}
+
+</body>
+</html>

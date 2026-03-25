@@ -1,0 +1,204 @@
+{% extends "admin/base.html" %}
+{% block title %}Logs de Acceso{% endblock %}
+{% block page_title %}Logs de Acceso{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div>
+        <h1 style="font-size:22px; font-weight:700; color:#1B2A4A;">Logs de Acceso</h1>
+        <p class="page-subtitle">{{ logs | length }} registro(s) encontrado(s)</p>
+    </div>
+    <a href="{{ url_for('logs.exportar') }}" class="btn btn-primary">
+        📥 Exportar CSV
+    </a>
+</div>
+
+<!-- Resumen del día -->
+<div style="display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-bottom:24px;">
+
+    <div style="background:white; border-radius:12px; padding:20px;
+                box-shadow:0 2px 10px rgba(0,0,0,0.07);
+                display:flex; align-items:center; gap:14px;
+                border-left:4px solid #1B2A4A;">
+        <span style="font-size:30px;">📋</span>
+        <div>
+            <p style="font-size:22px; font-weight:700; color:#1B2A4A;">
+                {{ resumen_hoy.total }}
+            </p>
+            <p style="font-size:12px; color:#888;">Accesos hoy</p>
+        </div>
+    </div>
+
+    <div style="background:white; border-radius:12px; padding:20px;
+                box-shadow:0 2px 10px rgba(0,0,0,0.07);
+                display:flex; align-items:center; gap:14px;
+                border-left:4px solid #2e7d32;">
+        <span style="font-size:30px;">✅</span>
+        <div>
+            <p style="font-size:22px; font-weight:700; color:#2e7d32;">
+                {{ resumen_hoy.exitosos }}
+            </p>
+            <p style="font-size:12px; color:#888;">Exitosos hoy</p>
+        </div>
+    </div>
+
+    <div style="background:white; border-radius:12px; padding:20px;
+                box-shadow:0 2px 10px rgba(0,0,0,0.07);
+                display:flex; align-items:center; gap:14px;
+                border-left:4px solid #c62828;">
+        <span style="font-size:30px;">⚠️</span>
+        <div>
+            <p style="font-size:22px; font-weight:700; color:#c62828;">
+                {{ resumen_hoy.fallidos }}
+            </p>
+            <p style="font-size:12px; color:#888;">Fallidos hoy</p>
+        </div>
+    </div>
+
+</div>
+
+<!-- Últimos 5 accesos -->
+<div style="background:white; border-radius:12px; padding:22px;
+            box-shadow:0 2px 10px rgba(0,0,0,0.07); margin-bottom:24px;">
+    <p style="font-size:15px; font-weight:700; color:#1B2A4A; margin-bottom:16px;">
+        🕐 Últimos Accesos
+    </p>
+    <div style="display:flex; flex-direction:column; gap:8px;">
+        {% for u in ultimos %}
+        <div style="display:flex; justify-content:space-between; align-items:center;
+                    padding:10px 14px; border-radius:8px;
+                    background:{{ '#e8f5e9' if u.exitoso else '#fce4ec' }};">
+            <div style="display:flex; align-items:center; gap:12px;">
+                <span style="font-size:16px;">
+                    {{ '✅' if u.exitoso else '❌' }}
+                </span>
+                <div>
+                    <p style="font-size:13.5px; font-weight:600; color:#1B2A4A;">
+                        {{ u.username }}
+                    </p>
+                    <p style="font-size:12px; color:#888;">{{ u.accion }}</p>
+                </div>
+            </div>
+            <div style="text-align:right;">
+                <p style="font-size:12px; color:#555;">{{ u.fecha_hora }}</p>
+                <p style="font-size:11px; color:#aaa;">{{ u.ip_origen or '—' }}</p>
+            </div>
+        </div>
+        {% else %}
+        <p style="color:#aaa; font-style:italic; font-size:13.5px;">
+            No hay accesos registrados.
+        </p>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Filtros -->
+<div class="filters-bar">
+    <form method="GET" class="filters-form">
+
+        <select name="usuario_id" onchange="this.form.submit()">
+            <option value="">Todos los usuarios</option>
+            {% for u in usuarios %}
+            <option value="{{ u.usuario_id }}"
+                {{ 'selected' if filtro_usuario == u.usuario_id|string }}>
+                {{ u.username }}
+            </option>
+            {% endfor %}
+        </select>
+
+        <select name="exitoso" onchange="this.form.submit()">
+            <option value="">Todos</option>
+            <option value="true"  {{ 'selected' if filtro_exitoso == 'true' }}>✅ Exitosos</option>
+            <option value="false" {{ 'selected' if filtro_exitoso == 'false' }}>❌ Fallidos</option>
+        </select>
+
+        <input type="date" name="fecha"
+               value="{{ filtro_fecha }}"
+               style="padding:8px 12px; border:1.5px solid #dde1e7;
+                      border-radius:8px; font-size:13.5px; outline:none;"
+               onchange="this.form.submit()">
+
+        {% if filtro_usuario or filtro_fecha or filtro_exitoso %}
+        <a href="{{ url_for('logs.listar') }}" class="btn btn-secondary btn-sm">
+            Limpiar filtros
+        </a>
+        {% endif %}
+
+    </form>
+</div>
+
+<!-- Tabla -->
+<div class="table-container" style="margin-bottom:24px;">
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Usuario</th>
+                <th>Acción</th>
+                <th>Fecha y Hora</th>
+                <th>IP Origen</th>
+                <th>Estado</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for l in logs %}
+            <tr>
+                <td style="color:#888;">#{{ l.log_id }}</td>
+                <td><strong>{{ l.username }}</strong></td>
+                <td>{{ l.accion }}</td>
+                <td>{{ l.fecha_hora }}</td>
+                <td style="font-size:12.5px; color:#888;">
+                    {{ l.ip_origen or '—' }}
+                </td>
+                <td>
+                    {% if l.exitoso %}
+                        <span style="background:#e8f5e9; color:#2e7d32; padding:3px 10px;
+                                     border-radius:20px; font-size:12px; font-weight:600;">
+                            ✅ Exitoso
+                        </span>
+                    {% else %}
+                        <span style="background:#fce4ec; color:#c62828; padding:3px 10px;
+                                     border-radius:20px; font-size:12px; font-weight:600;">
+                            ❌ Fallido
+                        </span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="6" class="empty-row">No hay logs registrados.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Limpiar logs -->
+<div style="background:white; border-radius:12px; padding:22px;
+            box-shadow:0 2px 10px rgba(0,0,0,0.07);">
+    <p style="font-size:15px; font-weight:700; color:#1B2A4A; margin-bottom:6px;">
+        🗑️ Limpiar Logs Antiguos
+    </p>
+    <p style="font-size:13px; color:#888; margin-bottom:16px;">
+        Elimina registros más antiguos que los días indicados.
+    </p>
+    <form method="POST" action="{{ url_for('logs.limpiar') }}"
+          onsubmit="return confirm('¿Eliminar logs antiguos? Esta acción no se puede deshacer.')">
+        <div style="display:flex; gap:12px; align-items:center;">
+            <select name="dias"
+                    style="padding:9px 14px; border:1.5px solid #dde1e7;
+                           border-radius:8px; font-size:13.5px; outline:none;">
+                <option value="30">Más de 30 días</option>
+                <option value="60">Más de 60 días</option>
+                <option value="90">Más de 90 días</option>
+                <option value="180">Más de 180 días</option>
+            </select>
+            <button type="submit" class="btn btn-danger">
+                🗑️ Limpiar
+            </button>
+        </div>
+    </form>
+</div>
+
+{% endblock %}

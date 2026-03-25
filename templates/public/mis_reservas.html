@@ -1,0 +1,173 @@
+{% extends "public/base.html" %}
+{% block title %}Mis Reservas — Hotel Eden{% endblock %}
+
+{% block content %}
+
+<!-- Header -->
+<div style="background:linear-gradient(135deg, #0f1e35 0%, #1B2A4A 100%);
+            padding:50px 48px; text-align:center;">
+    <h1 style="font-size:34px; font-weight:800; color:white;">
+        📅 Mis <span style="color:#C9A84C;">Reservas</span>
+    </h1>
+    <p style="color:rgba(255,255,255,0.6); margin-top:10px; font-size:15px;">
+        Hola, <strong style="color:#C9A84C;">{{ cliente.nombre }}</strong> —
+        aquí están todas tus reservas
+    </p>
+</div>
+
+<div class="section">
+
+    {% if reservas %}
+
+    <!-- Resumen -->
+    <div style="display:grid; grid-template-columns:repeat(3,1fr);
+                gap:16px; margin-bottom:28px;">
+
+        <div style="background:white; border-radius:12px; padding:20px;
+                    box-shadow:0 4px 16px rgba(0,0,0,0.07);
+                    display:flex; align-items:center; gap:14px;
+                    border-left:4px solid #C9A84C;">
+            <span style="font-size:28px;">📅</span>
+            <div>
+                <p style="font-size:22px; font-weight:700; color:#1B2A4A;">
+                    {{ reservas | length }}
+                </p>
+                <p style="font-size:12px; color:#888;">Total reservas</p>
+            </div>
+        </div>
+
+        <div style="background:white; border-radius:12px; padding:20px;
+                    box-shadow:0 4px 16px rgba(0,0,0,0.07);
+                    display:flex; align-items:center; gap:14px;
+                    border-left:4px solid #2e7d32;">
+            <span style="font-size:28px;">✅</span>
+            <div>
+                <p style="font-size:22px; font-weight:700; color:#2e7d32;">
+                    {{ reservas | selectattr('estado', 'in', ['confirmada','check-in']) | list | length }}
+                </p>
+                <p style="font-size:12px; color:#888;">Activas</p>
+            </div>
+        </div>
+
+        <div style="background:white; border-radius:12px; padding:20px;
+                    box-shadow:0 4px 16px rgba(0,0,0,0.07);
+                    display:flex; align-items:center; gap:14px;
+                    border-left:4px solid #7b1fa2;">
+            <span style="font-size:28px;">🏁</span>
+            <div>
+                <p style="font-size:22px; font-weight:700; color:#7b1fa2;">
+                    {{ reservas | selectattr('estado', 'equalto', 'finalizada') | list | length }}
+                </p>
+                <p style="font-size:12px; color:#888;">Completadas</p>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Lista de reservas -->
+    <div style="display:flex; flex-direction:column; gap:16px;">
+        {% for r in reservas %}
+        <div style="background:white; border-radius:14px; padding:24px;
+                    box-shadow:0 4px 16px rgba(0,0,0,0.07);
+                    border-left:5px solid
+                    {% if r.estado == 'confirmada' %}#2e7d32
+                    {% elif r.estado == 'pendiente' %}#f57f17
+                    {% elif r.estado == 'check-in' %}#0d47a1
+                    {% elif r.estado == 'cancelada' %}#c62828
+                    {% elif r.estado == 'finalizada' %}#4e342e
+                    {% else %}#C9A84C{% endif %};">
+
+            <div style="display:flex; justify-content:space-between;
+                        align-items:start; flex-wrap:wrap; gap:12px;">
+
+                <!-- Info izquierda -->
+                <div>
+                    <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
+                        <h3 style="font-size:17px; font-weight:700; color:#1B2A4A;">
+                            {{ r.hotel }}
+                        </h3>
+                        <!-- Badge estado -->
+                        {% if r.estado == 'pendiente' %}
+                            <span style="background:#fff8e1; color:#f57f17; padding:3px 10px;
+                                         border-radius:20px; font-size:12px; font-weight:600;">
+                                ⏳ Pendiente
+                            </span>
+                        {% elif r.estado == 'confirmada' %}
+                            <span style="background:#e8f5e9; color:#2e7d32; padding:3px 10px;
+                                         border-radius:20px; font-size:12px; font-weight:600;">
+                                ✅ Confirmada
+                            </span>
+                        {% elif r.estado == 'check-in' %}
+                            <span style="background:#e3f2fd; color:#0d47a1; padding:3px 10px;
+                                         border-radius:20px; font-size:12px; font-weight:600;">
+                                🏨 Check-in
+                            </span>
+                        {% elif r.estado == 'cancelada' %}
+                            <span style="background:#fce4ec; color:#c62828; padding:3px 10px;
+                                         border-radius:20px; font-size:12px; font-weight:600;">
+                                ❌ Cancelada
+                            </span>
+                        {% elif r.estado == 'finalizada' %}
+                            <span style="background:#efebe9; color:#4e342e; padding:3px 10px;
+                                         border-radius:20px; font-size:12px; font-weight:600;">
+                                🏁 Finalizada
+                            </span>
+                        {% elif r.estado == 'check-out' %}
+                            <span style="background:#f3e5f5; color:#6a1b9a; padding:3px 10px;
+                                         border-radius:20px; font-size:12px; font-weight:600;">
+                                🚪 Check-out
+                            </span>
+                        {% endif %}
+                    </div>
+
+                    <div style="display:flex; gap:20px; flex-wrap:wrap;">
+                        <p style="font-size:13.5px; color:#555;">
+                            🛏️ Hab. {{ r.habitacion }} — {{ r.tipo_hab | title }}
+                        </p>
+                        <p style="font-size:13.5px; color:#555;">
+                            📅 {{ r.fecha_inicio }} → {{ r.fecha_fin }}
+                        </p>
+                        <p style="font-size:13.5px; color:#555;">
+                            👥 {{ r.num_adultos }} adultos
+                            {% if r.num_menores %} / {{ r.num_menores }} menores{% endif %}
+                            {% if r.num_mascotas %} / {{ r.num_mascotas }} 🐾{% endif %}
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Total derecha -->
+                <div style="text-align:right;">
+                    <p style="font-size:22px; font-weight:800; color:#C9A84C;">
+                        ${{ "{:,.2f}".format(r.total | float) }}
+                    </p>
+                    <p style="font-size:12px; color:#aaa;">Total reserva</p>
+                    <p style="font-size:12px; color:#aaa; margin-top:4px;">
+                        #{{ r.reserva_id }}
+                    </p>
+                </div>
+
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% else %}
+    <div style="text-align:center; padding:60px; background:white;
+                border-radius:14px; box-shadow:0 4px 16px rgba(0,0,0,0.07);">
+        <p style="font-size:48px; margin-bottom:16px;">📅</p>
+        <p style="font-size:17px; font-weight:600; color:#1B2A4A;">
+            No tienes reservas aún
+        </p>
+        <p style="color:#aaa; margin-top:8px; font-size:14px;">
+            ¡Haz tu primera reserva y disfruta de una estancia inolvidable!
+        </p>
+        <a href="{{ url_for('public.reservar') }}"
+           class="btn btn-gold" style="margin-top:20px;">
+            Reservar ahora
+        </a>
+    </div>
+    {% endif %}
+
+</div>
+
+{% endblock %}

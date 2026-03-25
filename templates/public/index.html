@@ -1,0 +1,230 @@
+{% extends "public/base.html" %}
+{% block title %}Hotel Eden — Bienvenido{% endblock %}
+
+{% block content %}
+
+<!-- ── HERO ── -->
+<div style="background: linear-gradient(135deg, #0f1e35 0%, #1B2A4A 100%);
+            padding: 90px 48px; text-align: center;">
+    <img src="{{ url_for('static', filename='img/logo.png') }}"
+         style="height:90px; margin-bottom:24px;">
+    <h1 style="font-size:42px; font-weight:800; color:white; letter-spacing:2px;">
+        Bienvenido a <span style="color:#C9A84C;">Hotel Eden</span>
+    </h1>
+    <p style="font-size:17px; color:rgba(255,255,255,0.65);
+              margin:16px auto 36px; max-width:560px; line-height:1.7;">
+        Descubre el lujo y la comodidad en cada estancia.
+        Reserva tu habitación ideal y vive una experiencia inolvidable.
+    </p>
+    <div style="display:flex; gap:14px; justify-content:center;">
+        <a href="{{ url_for('public.habitaciones') }}" class="btn btn-gold"
+           style="font-size:15px; padding:13px 30px;">
+            Ver Habitaciones
+        </a>
+        <a href="{{ url_for('public.reservar') }}" class="btn btn-outline-gold"
+           style="font-size:15px; padding:13px 30px;">
+            Reservar Ahora
+        </a>
+    </div>
+</div>
+
+<!-- ── HABITACIONES DESTACADAS ── -->
+<div class="section">
+    <div class="section-header">
+        <div>
+            <h2 class="section-title">🛏️ Habitaciones Disponibles</h2>
+            <p class="section-subtitle">Encuentra la habitación perfecta para tu estancia</p>
+        </div>
+        <a href="{{ url_for('public.habitaciones') }}" class="btn btn-outline-gold">
+            Ver todas →
+        </a>
+    </div>
+
+    {% if habitaciones %}
+    <div class="cards-grid">
+        {% for h in habitaciones %}
+        <div class="card">
+            <!-- Imagen placeholder -->
+            <div style="height:160px; background:linear-gradient(135deg, #1B2A4A, #2d4a7a);
+                        display:flex; align-items:center; justify-content:center;">
+                <span style="font-size:48px;">🛏️</span>
+            </div>
+            <div class="card-body">
+                <div style="display:flex; justify-content:space-between; align-items:start;">
+                    <h3 class="card-title">{{ h.tipo | title }}</h3>
+                    {% if h.permite_mascotas %}
+                    <span class="badge badge-green">🐾 Pet friendly</span>
+                    {% endif %}
+                </div>
+                <p class="card-text">
+                    {{ h.hotel_nombre }} · Hab. {{ h.numero }}
+                    {% if h.piso %} · Piso {{ h.piso }}{% endif %}
+                </p>
+                <p class="card-text" style="margin-top:4px;">
+                    👥 {{ h.capacidad_adultos }} adultos
+                    {% if h.capacidad_menores %} / {{ h.capacidad_menores }} menores{% endif %}
+                </p>
+                <p class="card-price">${{ "{:,.2f}".format(h.precio_base | float) }}<span style="font-size:13px; color:#888; font-weight:400;">/noche</span></p>
+                <a href="{{ url_for('public.reservar') }}?habitacion_id={{ h.habitacion_id }}"
+                   class="btn btn-gold" style="width:100%; justify-content:center;">
+                    Reservar
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p style="text-align:center; color:#aaa; font-style:italic; padding:40px;">
+        No hay habitaciones disponibles en este momento.
+    </p>
+    {% endif %}
+</div>
+
+<!-- ── SERVICIOS ── -->
+{% if servicios %}
+<div style="background: #1B2A4A; padding: 60px 0;">
+    <div class="section" style="padding-top:0; padding-bottom:0;">
+        <div style="text-align:center; margin-bottom:36px;">
+            <h2 style="font-size:28px; font-weight:700; color:white;">
+                ✨ Nuestros Servicios
+            </h2>
+            <p style="color:rgba(255,255,255,0.5); margin-top:8px;">
+                Todo lo que necesitas para una estancia perfecta
+            </p>
+        </div>
+        <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:16px;">
+            {% for s in servicios %}
+            <div style="background:rgba(255,255,255,0.07); border-radius:12px;
+                        padding:22px; text-align:center; border:1px solid rgba(201,168,76,0.2);">
+                <div style="font-size:32px; margin-bottom:10px;">
+                    {% if s.nombre == 'spa' %}🧖
+                    {% elif s.nombre == 'restaurante' %}🍽️
+                    {% elif s.nombre == 'bar' %}🍸
+                    {% elif s.nombre == 'gimnasio' %}💪
+                    {% elif s.nombre == 'transporte' %}🚗
+                    {% elif s.nombre == 'lavandería' %}👕
+                    {% elif s.nombre == 'room service' %}🛎️
+                    {% else %}⭐{% endif %}
+                </div>
+                <p style="font-size:14px; font-weight:600; color:#C9A84C;">
+                    {{ s.nombre | title }}
+                </p>
+                <p style="font-size:12px; color:rgba(255,255,255,0.5); margin-top:4px;">
+                    ${{ "{:,.2f}".format(s.precio | float) }}
+                </p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- ── PROMOCIONES ── -->
+{% if promociones %}
+<div class="section">
+    <div class="section-header">
+        <div>
+            <h2 class="section-title">🎁 Promociones Vigentes</h2>
+            <p class="section-subtitle">Aprovecha nuestras ofertas especiales</p>
+        </div>
+        {% if total_promociones > 3 %}
+        <a href="{{ url_for('public.promociones') }}" class="btn btn-outline-gold">
+            Ver todas ({{ total_promociones }}) →
+        </a>
+        {% endif %}
+    </div>
+
+    <div class="cards-grid">
+        {% for p in promociones %}
+        <div class="card" style="border-top:4px solid #C9A84C;">
+            <div class="card-body">
+                <div style="display:flex; justify-content:space-between; align-items:center;
+                            margin-bottom:12px;">
+                    <span style="font-size:36px;">🎁</span>
+                    <span style="background:#fff8e1; color:#c47f00; padding:6px 14px;
+                                 border-radius:20px; font-size:18px; font-weight:800;">
+                        {{ p.descuento }}% OFF
+                    </span>
+                </div>
+                <h3 class="card-title">{{ p.hotel_nombre }}</h3>
+                <p class="card-text">{{ p.descripcion }}</p>
+                <p style="font-size:12px; color:#aaa; margin-top:10px;">
+                    Válido: {{ p.fecha_inicio }} — {{ p.fecha_fin }}
+                </p>
+                <a href="{{ url_for('public.reservar') }}"
+                   class="btn btn-gold" style="width:100%; justify-content:center; margin-top:14px;">
+                    Aprovechar oferta
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<!-- ── OPINIONES ── -->
+{% if opiniones %}
+<div style="background:white; padding:60px 0;">
+    <div class="section" style="padding-top:0; padding-bottom:0;">
+        <div style="text-align:center; margin-bottom:36px;">
+            <h2 class="section-title">💬 Lo que dicen nuestros huéspedes</h2>
+            <p class="section-subtitle">Opiniones reales de clientes verificados</p>
+        </div>
+        <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:20px;">
+            {% for o in opiniones %}
+            <div style="background:var(--cream); border-radius:12px; padding:22px;
+                        border:1px solid #ede8de;">
+                <div style="display:flex; justify-content:space-between; margin-bottom:12px;">
+                    <strong style="color:#1B2A4A; font-size:14px;">{{ o.cliente }}</strong>
+                    <span style="color:#C9A84C; font-size:16px;">
+                        {% for i in range(o.calificacion) %}⭐{% endfor %}
+                    </span>
+                </div>
+                <p style="font-size:13.5px; color:#555; line-height:1.6; font-style:italic;">
+                    "{{ o.comentario }}"
+                </p>
+                <p style="font-size:11.5px; color:#aaa; margin-top:10px;">
+                    {{ o.hotel_nombre }} · {{ o.fecha }}
+                </p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- ── CONTACTO ── -->
+<div class="section">
+    <div style="text-align:center; margin-bottom:36px;">
+        <h2 class="section-title">📍 Encuéntranos</h2>
+        <p class="section-subtitle">Estamos aquí para atenderte</p>
+    </div>
+    <div style="display:grid; grid-template-columns:repeat({{ hoteles|length }},1fr); gap:20px;">
+        {% for h in hoteles %}
+        <div style="background:white; border-radius:14px; padding:28px;
+                    box-shadow:0 4px 16px rgba(0,0,0,0.08); text-align:center;
+                    border-top:4px solid #C9A84C;">
+            <p style="font-size:32px; margin-bottom:12px;">🏨</p>
+            <h3 style="font-size:17px; font-weight:700; color:#1B2A4A; margin-bottom:14px;">
+                {{ h.nombre }}
+            </h3>
+            <div style="display:flex; flex-direction:column; gap:8px; text-align:left;">
+                <p style="font-size:13.5px; color:#555;">
+                    📍 {{ h.direccion }}, {{ h.ciudad }}
+                </p>
+                <p style="font-size:13.5px; color:#555;">
+                    📞 {{ h.telefono }}
+                </p>
+                <p style="font-size:13.5px; color:#555;">
+                    ✉️ {{ h.email_contacto }}
+                </p>
+                <p style="font-size:13.5px; color:#C9A84C; font-weight:600;">
+                    ⭐ {{ h.categoria }}
+                </p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+{% endblock %}

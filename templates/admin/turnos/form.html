@@ -1,0 +1,139 @@
+{% extends "admin/base.html" %}
+{% block title %}Asignar Turno{% endblock %}
+{% block page_title %}Asignar Turno{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div>
+        <h1 style="font-size:22px; font-weight:700; color:#1B2A4A;">Asignar Turno</h1>
+        <p class="page-subtitle">Completa los datos del turno</p>
+    </div>
+    <a href="{{ url_for('turnos.listar') }}" class="btn btn-secondary">← Volver</a>
+</div>
+
+<div class="form-card">
+    <form method="POST" id="form-turno">
+        <div class="form-grid">
+
+            <!-- Empleado -->
+            <div class="form-group full">
+                <label>Empleado <span class="required">*</span></label>
+                <select name="empleado_id" required>
+                    <option value="">Selecciona un empleado...</option>
+                    {% for e in empleados %}
+                    <option value="{{ e.empleado_id }}"
+                        {{ 'selected' if empleado_id and empleado_id == e.empleado_id }}>
+                        {{ e.apellido }}, {{ e.nombre }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Fecha inicio -->
+            <div class="form-group">
+                <label>Fecha de Inicio <span class="required">*</span></label>
+                <input type="date" name="fecha_inicio" id="fecha-inicio"
+                       required value="{{ today }}">
+            </div>
+
+            <!-- Hora inicio -->
+            <div class="form-group">
+                <label>Hora de Inicio <span class="required">*</span></label>
+                <input type="time" name="hora_inicio" id="hora-inicio"
+                       required value="08:00">
+            </div>
+
+            <!-- Fecha fin -->
+            <div class="form-group">
+                <label>Fecha de Fin <span class="required">*</span></label>
+                <input type="date" name="fecha_fin" id="fecha-fin"
+                       required value="{{ today }}">
+            </div>
+
+            <!-- Hora fin -->
+            <div class="form-group">
+                <label>Hora de Fin <span class="required">*</span></label>
+                <input type="time" name="hora_fin" id="hora-fin"
+                       required value="16:00">
+            </div>
+
+            <!-- Resumen del turno -->
+            <div class="form-group full">
+                <div id="resumen-turno"
+                     style="background:#f0f4ff; border-radius:10px; padding:14px;
+                            font-size:13.5px; color:#1B2A4A; display:none;">
+                </div>
+            </div>
+
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">
+                ✅ Asignar Turno
+            </button>
+            <a href="{{ url_for('turnos.listar') }}" class="btn btn-secondary">
+                Cancelar
+            </a>
+        </div>
+
+    </form>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const fechaInicio = document.getElementById('fecha-inicio');
+    const horaInicio  = document.getElementById('hora-inicio');
+    const fechaFin    = document.getElementById('fecha-fin');
+    const horaFin     = document.getElementById('hora-fin');
+    const resumen     = document.getElementById('resumen-turno');
+
+    function mostrarResumen() {
+        if (!fechaInicio.value || !horaInicio.value ||
+            !fechaFin.value || !horaFin.value) {
+            resumen.style.display = 'none';
+            return;
+        }
+
+        const inicio = new Date(`${fechaInicio.value}T${horaInicio.value}`);
+        const fin    = new Date(`${fechaFin.value}T${horaFin.value}`);
+
+        if (fin <= inicio) {
+            resumen.style.display    = 'block';
+            resumen.style.background = '#fce4ec';
+            resumen.style.color      = '#c62828';
+            resumen.innerHTML        = '⚠️ La fecha/hora de fin debe ser posterior al inicio.';
+            return;
+        }
+
+        const diffMs    = fin - inicio;
+        const diffHoras = (diffMs / (1000 * 60 * 60)).toFixed(1);
+
+        resumen.style.display    = 'block';
+        resumen.style.background = '#e8f5e9';
+        resumen.style.color      = '#2e7d32';
+        resumen.innerHTML = `
+            ✅ <strong>Turno de ${diffHoras} horas</strong><br>
+            Inicio: ${fechaInicio.value} a las ${horaInicio.value}<br>
+            Fin: ${fechaFin.value} a las ${horaFin.value}
+        `;
+    }
+
+    // Validar antes de enviar
+    document.getElementById('form-turno').addEventListener('submit', (e) => {
+        const inicio = new Date(`${fechaInicio.value}T${horaInicio.value}`);
+        const fin    = new Date(`${fechaFin.value}T${horaFin.value}`);
+        if (fin <= inicio) {
+            e.preventDefault();
+            alert('La fecha y hora de fin deben ser posteriores al inicio.');
+        }
+    });
+
+    fechaInicio.addEventListener('change', mostrarResumen);
+    horaInicio.addEventListener('change',  mostrarResumen);
+    fechaFin.addEventListener('change',    mostrarResumen);
+    horaFin.addEventListener('change',     mostrarResumen);
+</script>
+{% endblock %}

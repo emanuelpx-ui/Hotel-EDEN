@@ -1,0 +1,164 @@
+{% extends "admin/base.html" %}
+{% block title %}Detalle Cliente{% endblock %}
+{% block page_title %}Perfil del Cliente{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div>
+        <h1 style="font-size:22px; font-weight:700; color:#1B2A4A;">
+            {{ cliente.nombre }} {{ cliente.apellido }}
+        </h1>
+        <p class="page-subtitle">Cliente #{{ cliente.cliente_id }} — Registrado el {{ cliente.fecha_registro }}</p>
+    </div>
+    <div style="display:flex; gap:10px;">
+        <a href="{{ url_for('clientes.editar', cliente_id=cliente.cliente_id) }}"
+           class="btn btn-primary">✏️ Editar</a>
+        <a href="{{ url_for('clientes.listar') }}" class="btn btn-secondary">← Volver</a>
+    </div>
+</div>
+
+<!-- Datos del cliente + resumen -->
+<div style="display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-bottom:24px;">
+
+    <!-- Datos personales -->
+    <div style="background:white; border-radius:12px; padding:24px; box-shadow:0 2px 10px rgba(0,0,0,0.07);">
+        <p style="font-size:14px; font-weight:700; color:#C9A84C; text-transform:uppercase;
+                  letter-spacing:1px; margin-bottom:18px;">📋 Datos Personales</p>
+
+        <div style="display:flex; flex-direction:column; gap:12px;">
+
+            <div style="display:flex; justify-content:space-between; border-bottom:1px solid #f0f2f5; padding-bottom:10px;">
+                <span style="font-size:13px; color:#888;">Nombre completo</span>
+                <span style="font-size:13.5px; font-weight:600; color:#1B2A4A;">
+                    {{ cliente.nombre }} {{ cliente.apellido }}
+                </span>
+            </div>
+
+            <div style="display:flex; justify-content:space-between; border-bottom:1px solid #f0f2f5; padding-bottom:10px;">
+                <span style="font-size:13px; color:#888;">Email</span>
+                <span style="font-size:13.5px; color:#1B2A4A;">{{ cliente.email or '—' }}</span>
+            </div>
+
+            <div style="display:flex; justify-content:space-between; border-bottom:1px solid #f0f2f5; padding-bottom:10px;">
+                <span style="font-size:13px; color:#888;">Teléfono</span>
+                <span style="font-size:13.5px; color:#1B2A4A;">{{ cliente.telefono or '—' }}</span>
+            </div>
+
+            <div style="display:flex; justify-content:space-between; border-bottom:1px solid #f0f2f5; padding-bottom:10px;">
+                <span style="font-size:13px; color:#888;">Fecha de nacimiento</span>
+                <span style="font-size:13.5px; color:#1B2A4A;">{{ cliente.fecha_nacimiento or '—' }}</span>
+            </div>
+
+            <div style="display:flex; justify-content:space-between;">
+                <span style="font-size:13px; color:#888;">Dirección</span>
+                <span style="font-size:13.5px; color:#1B2A4A; text-align:right; max-width:200px;">
+                    {{ cliente.direccion or '—' }}
+                </span>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Resumen estadístico -->
+    <div style="display:flex; flex-direction:column; gap:14px;">
+
+        <div style="background:white; border-radius:12px; padding:20px;
+                    box-shadow:0 2px 10px rgba(0,0,0,0.07);
+                    display:flex; align-items:center; gap:16px;
+                    border-left:4px solid #C9A84C;">
+            <span style="font-size:30px;">📅</span>
+            <div>
+                <p style="font-size:24px; font-weight:700; color:#1B2A4A;">{{ reservas | length }}</p>
+                <p style="font-size:12px; color:#888;">Reservas en total</p>
+            </div>
+        </div>
+
+        <div style="background:white; border-radius:12px; padding:20px;
+                    box-shadow:0 2px 10px rgba(0,0,0,0.07);
+                    display:flex; align-items:center; gap:16px;
+                    border-left:4px solid #7b1fa2;">
+            <span style="font-size:30px;">💰</span>
+            <div>
+                <p style="font-size:24px; font-weight:700; color:#7b1fa2;">
+                    ${{ "{:,.2f}".format(total_gastado | float) }}
+                </p>
+                <p style="font-size:12px; color:#888;">Total gastado</p>
+            </div>
+        </div>
+
+        <div style="background:white; border-radius:12px; padding:20px;
+                    box-shadow:0 2px 10px rgba(0,0,0,0.07);
+                    display:flex; align-items:center; gap:16px;
+                    border-left:4px solid #2e7d32;">
+            <span style="font-size:30px;">✅</span>
+            <div>
+                <p style="font-size:24px; font-weight:700; color:#2e7d32;">
+                    {{ reservas | selectattr('estado', 'equalto', 'finalizada') | list | length }}
+                </p>
+                <p style="font-size:12px; color:#888;">Estancias completadas</p>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+<!-- Historial de reservas -->
+<div style="background:white; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,0.07); overflow:hidden;">
+
+    <div style="padding:18px 24px; border-bottom:1px solid #f0f2f5;
+                display:flex; justify-content:space-between; align-items:center;">
+        <p style="font-size:15px; font-weight:700; color:#1B2A4A;">📋 Historial de Reservas</p>
+        <a href="#" class="btn btn-sm btn-primary">+ Nueva Reserva</a>
+    </div>
+
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Hotel</th>
+                <th>Habitación</th>
+                <th>Entrada</th>
+                <th>Salida</th>
+                <th>Huéspedes</th>
+                <th>Total</th>
+                <th>Estado</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for r in reservas %}
+            <tr>
+                <td style="color:#888;">#{{ r.reserva_id }}</td>
+                <td>{{ r.hotel }}</td>
+                <td>
+                    Hab. {{ r.habitacion }}<br>
+                    <small class="text-muted">{{ r.tipo_hab | title }}</small>
+                </td>
+                <td>{{ r.fecha_inicio }}</td>
+                <td>{{ r.fecha_fin }}</td>
+                <td>
+                    {{ r.num_adultos }}A
+                    {% if r.num_menores %} / {{ r.num_menores }}M {% endif %}
+                    {% if r.num_mascotas %} / {{ r.num_mascotas }}🐾 {% endif %}
+                </td>
+                <td><strong>${{ "{:,.2f}".format(r.total | float) }}</strong></td>
+                <td>
+                    <span class="badge badge-{{ r.estado.replace('-','') }}">
+                        {{ r.estado | title }}
+                    </span>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="8" class="empty-row">
+                    Este cliente no tiene reservas registradas.
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+</div>
+
+{% endblock %}

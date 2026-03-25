@@ -1,0 +1,97 @@
+{% extends "admin/base.html" %}
+{% block title %}{{ 'Editar' if cliente else 'Nuevo' }} Cliente{% endblock %}
+{% block page_title %}{{ 'Editar Cliente' if cliente else 'Nuevo Cliente' }}{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div>
+        <h1 style="font-size:22px; font-weight:700; color:#1B2A4A;">
+            {{ 'Editar Cliente' if cliente else 'Registrar Nuevo Cliente' }}
+        </h1>
+        <p class="page-subtitle">
+            {% if cliente %}
+                Modificando: {{ cliente.nombre }} {{ cliente.apellido }}
+            {% else %}
+                Completa los datos del nuevo cliente
+            {% endif %}
+        </p>
+    </div>
+    <a href="{{ url_for('clientes.listar') }}" class="btn btn-secondary">← Volver</a>
+</div>
+
+<div class="form-card">
+    <form method="POST">
+        <div class="form-grid">
+
+            <div class="form-group">
+                <label>Nombre <span class="required">*</span></label>
+                <input type="text" name="nombre" required
+                       placeholder="Ej. Juan"
+                       value="{{ cliente.nombre if cliente else '' }}">
+            </div>
+
+            <div class="form-group">
+                <label>Apellido <span class="required">*</span></label>
+                <input type="text" name="apellido" required
+                       placeholder="Ej. Pérez"
+                       value="{{ cliente.apellido if cliente else '' }}">
+            </div>
+
+            <div class="form-group">
+                <label>Teléfono</label>
+                <input type="text" name="telefono"
+                       placeholder="Ej. 2221234567"
+                       value="{{ cliente.telefono if cliente else '' }}">
+            </div>
+
+            <div class="form-group">
+                <label>Correo Electrónico</label>
+                <input type="email" name="email"
+                       placeholder="Ej. juan@correo.com"
+                       value="{{ cliente.email if cliente else '' }}">
+            </div>
+
+            <div class="form-group">
+                <label>Fecha de Nacimiento</label>
+                <input type="date" name="fecha_nacimiento"
+                       value="{{ cliente.fecha_nacimiento if cliente else '' }}">
+            </div>
+
+            <div class="form-group">
+                <label>Fecha de Registro</label>
+                <input type="text" disabled
+                       value="{{ cliente.fecha_registro if cliente else 'Se asigna automáticamente' }}"
+                       style="background:#f5f5f5; color:#aaa; cursor:not-allowed;">
+            </div>
+
+            <div class="form-group full">
+                <label>Dirección</label>
+                <input type="text" name="direccion"
+                       placeholder="Ej. Calle 5 de Mayo #10, Puebla"
+                       value="{{ cliente.direccion if cliente else '' }}">
+            </div>
+
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">
+                {{ '💾 Guardar Cambios' if cliente else '✅ Registrar Cliente' }}
+            </button>
+            <a href="{{ url_for('clientes.listar') }}" class="btn btn-secondary">
+                Cancelar
+            </a>
+            {% if cliente %}
+            <form method="POST"
+                  action="{{ url_for('clientes.eliminar', cliente_id=cliente.cliente_id) }}"
+                  onsubmit="return confirm('¿Eliminar a {{ cliente.nombre }}? Esta acción no se puede deshacer.')"
+                  style="margin:0;">
+                <button type="submit" class="btn btn-danger">🗑️ Eliminar Cliente</button>
+            </form>
+            {% endif %}
+        </div>
+
+    </form>
+</div>
+
+{% endblock %}

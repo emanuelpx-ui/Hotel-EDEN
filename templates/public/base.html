@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Hotel Eden{% endblock %}</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --navy:  #1B2A4A;
+            --gold:  #C9A84C;
+            --gold-l:#E2C47A;
+            --cream: #F8F6F0;
+            --text:  #2d2d2d;
+            --muted: #888;
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: var(--cream);
+            color: var(--text);
+        }
+
+        /* ── NAVBAR ── */
+        .navbar {
+            background: var(--navy);
+            padding: 0 48px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 70px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+        }
+
+        .navbar-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+        }
+
+        .navbar-logo img {
+            height: 42px;
+            object-fit: contain;
+        }
+
+        .navbar-logo span {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--gold);
+            letter-spacing: 2px;
+        }
+
+        .navbar-links {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .navbar-links a {
+            color: rgba(255,255,255,0.75);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            padding: 8px 14px;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+
+        .navbar-links a:hover {
+            color: var(--gold);
+            background: rgba(201,168,76,0.1);
+        }
+
+        .navbar-links a.active {
+            color: var(--gold);
+            font-weight: 600;
+        }
+
+        .navbar-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-nav {
+            padding: 8px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s;
+            border: none;
+        }
+
+        .btn-nav-outline {
+            background: transparent;
+            color: var(--gold);
+            border: 1.5px solid var(--gold);
+        }
+
+        .btn-nav-outline:hover {
+            background: var(--gold);
+            color: var(--navy);
+        }
+
+        .btn-nav-solid {
+            background: var(--gold);
+            color: var(--navy);
+        }
+
+        .btn-nav-solid:hover {
+            background: var(--gold-l);
+        }
+
+        /* Usuario logueado en navbar */
+        .navbar-user {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: rgba(255,255,255,0.8);
+            font-size: 13.5px;
+        }
+
+        .navbar-user span {
+            color: var(--gold);
+            font-weight: 600;
+        }
+
+        /* ── FLASH MESSAGES ── */
+        .flash-container {
+            max-width: 1100px;
+            margin: 16px auto 0;
+            padding: 0 24px;
+        }
+
+        .flash {
+            padding: 12px 18px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .flash-success { background: #e8f5e9; color: #1b5e20; border-left: 4px solid #2e7d32; }
+        .flash-danger  { background: #fce4ec; color: #7b0000; border-left: 4px solid #c62828; }
+        .flash-warning { background: #fff3e0; color: #bf360c; border-left: 4px solid #e65100; }
+        .flash-info    { background: #e3f2fd; color: #0d47a1; border-left: 4px solid #1565c0; }
+
+        /* ── FOOTER ── */
+        footer {
+            background: var(--navy);
+            color: rgba(255,255,255,0.6);
+            text-align: center;
+            padding: 32px 24px;
+            margin-top: 60px;
+            font-size: 13px;
+        }
+
+        footer strong {
+            color: var(--gold);
+        }
+
+        /* ── BOTONES GLOBALES ── */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 10px 22px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .btn-gold {
+            background: var(--gold);
+            color: var(--navy);
+        }
+
+        .btn-gold:hover { background: var(--gold-l); }
+
+        .btn-navy {
+            background: var(--navy);
+            color: var(--gold);
+        }
+
+        .btn-navy:hover { background: #0f1e35; }
+
+        .btn-outline-gold {
+            background: transparent;
+            color: var(--gold);
+            border: 2px solid var(--gold);
+        }
+
+        .btn-outline-gold:hover {
+            background: var(--gold);
+            color: var(--navy);
+        }
+
+        /* ── SECCIÓN GENERAL ── */
+        .section {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 60px 24px;
+        }
+
+        .section-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--navy);
+            margin-bottom: 8px;
+        }
+
+        .section-subtitle {
+            color: var(--muted);
+            font-size: 15px;
+            margin-bottom: 36px;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: 28px;
+        }
+
+        /* ── CARDS ── */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 22px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+        }
+
+        .card-body {
+            padding: 20px;
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--navy);
+            margin-bottom: 6px;
+        }
+
+        .card-text {
+            font-size: 13.5px;
+            color: var(--muted);
+            line-height: 1.6;
+        }
+
+        .card-price {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--gold);
+            margin: 10px 0;
+        }
+
+        /* ── BADGE ── */
+        .badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .badge-gold {
+            background: #fff8e1;
+            color: #c47f00;
+        }
+
+        .badge-green {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        /* ── FORMULARIOS ── */
+        .form-card {
+            background: white;
+            border-radius: 14px;
+            padding: 36px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 18px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .form-group.full { grid-column: 1 / -1; }
+
+        .form-group label {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--navy);
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            padding: 11px 14px;
+            border: 1.5px solid #dde1e7;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            outline: none;
+            transition: all 0.2s;
+            width: 100%;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            border-color: var(--gold);
+            box-shadow: 0 0 0 3px rgba(201,168,76,0.15);
+        }
+
+        .required { color: #c62828; }
+
+        .form-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+            padding-top: 20px;
+            border-top: 1px solid #f0f2f5;
+        }
+    </style>
+</head>
+<body>
+
+<!-- ── NAVBAR ── -->
+<nav class="navbar">
+    <a href="{{ url_for('public.index') }}" class="navbar-logo">
+        <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Hotel Eden">
+        <span>HOTEL EDEN</span>
+    </a>
+
+    <div class="navbar-links">
+        <a href="{{ url_for('public.index') }}"
+           class="{{ 'active' if request.endpoint == 'public.index' }}">
+            Inicio
+        </a>
+        <a href="{{ url_for('public.habitaciones') }}"
+           class="{{ 'active' if request.endpoint == 'public.habitaciones' }}">
+            Habitaciones
+        </a>
+        <a href="{{ url_for('public.promociones') }}"
+           class="{{ 'active' if request.endpoint == 'public.promociones' }}">
+            Promociones
+        </a>
+        {% if 'usuario_id' in session %}
+        <a href="{{ url_for('public.mis_reservas') }}"
+           class="{{ 'active' if request.endpoint == 'public.mis_reservas' }}">
+            Mis Reservas
+        </a>
+        <a href="{{ url_for('public.mi_perfil') }}"
+           class="{{ 'active' if request.endpoint == 'public.mi_perfil' }}">
+            Mi Perfil
+        </a>
+        {% endif %}
+    </div>
+
+    <div class="navbar-actions">
+        {% if 'usuario_id' in session %}
+            <div class="navbar-user">
+                Hola, <span>{{ session.get('username') }}</span>
+            </div>
+            <a href="{{ url_for('auth.logout') }}" class="btn-nav btn-nav-outline">
+                Salir
+            </a>
+        {% else %}
+            <a href="{{ url_for('auth.cliente_login') }}" class="btn-nav btn-nav-outline">
+                Iniciar Sesión
+            </a>
+            <a href="{{ url_for('public.registro') }}" class="btn-nav btn-nav-solid">
+                Registrarse
+            </a>
+        {% endif %}
+    </div>
+</nav>
+
+<!-- ── FLASH MESSAGES ── -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        <div class="flash-container">
+        {% for category, message in messages %}
+            <div class="flash flash-{{ category }}">{{ message }}</div>
+        {% endfor %}
+        </div>
+    {% endif %}
+{% endwith %}
+
+<!-- ── CONTENIDO ── -->
+{% block content %}{% endblock %}
+
+<!-- ── FOOTER ── -->
+<footer>
+    <p><strong>HOTEL EDEN</strong> — Lujo y confort en cada estancia</p>
+    <p style="margin-top:8px;">© 2026 Hotel Eden. Todos los derechos reservados.</p>
+</footer>
+
+<script>
+    // Auto-ocultar flash messages
+    setTimeout(() => {
+        document.querySelectorAll('.flash').forEach(f => {
+            f.style.transition = 'opacity 0.5s';
+            f.style.opacity = '0';
+            setTimeout(() => f.remove(), 500);
+        });
+    }, 4000);
+</script>
+
+<script>
+    // Auto-ocultar flash messages
+    setTimeout(() => {
+        document.querySelectorAll('.flash').forEach(f => {
+            f.style.transition = 'opacity 0.5s';
+            f.style.opacity = '0';
+            setTimeout(() => f.remove(), 500);
+        });
+    }, 4000);
+
+    // CSRF token automático en todos los formularios
+    document.querySelectorAll('form').forEach(form => {
+        if (!form.querySelector('input[name="csrf_token"]')) {
+            const input = document.createElement('input');
+            input.type  = 'hidden';
+            input.name  = 'csrf_token';
+            input.value = document.querySelector('meta[name="csrf-token"]').content;
+            form.appendChild(input);
+        }
+    });
+</script>
+
+{% block scripts %}{% endblock %}
+
+</body>
+</html>

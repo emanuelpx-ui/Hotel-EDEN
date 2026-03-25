@@ -1,0 +1,122 @@
+{% extends "admin/base.html" %}
+{% block title %}Servicios{% endblock %}
+{% block page_title %}Gestión de Servicios{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div>
+        <h1 style="font-size:22px; font-weight:700; color:#1B2A4A;">Servicios</h1>
+        <p class="page-subtitle">{{ servicios | length }} servicio(s) registrado(s)</p>
+    </div>
+    <a href="{{ url_for('servicios.nuevo') }}" class="btn btn-primary">+ Nuevo Servicio</a>
+</div>
+
+<!-- Tarjetas resumen -->
+<div style="display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-bottom:24px;">
+
+    <div style="background:white; border-radius:12px; padding:20px;
+                box-shadow:0 2px 10px rgba(0,0,0,0.07);
+                display:flex; align-items:center; gap:14px;
+                border-left:4px solid #C9A84C;">
+        <span style="font-size:30px;">🍽️</span>
+        <div>
+            <p style="font-size:22px; font-weight:700; color:#1B2A4A;">
+                {{ servicios | length }}
+            </p>
+            <p style="font-size:12px; color:#888;">Servicios disponibles</p>
+        </div>
+    </div>
+
+    <div style="background:white; border-radius:12px; padding:20px;
+                box-shadow:0 2px 10px rgba(0,0,0,0.07);
+                display:flex; align-items:center; gap:14px;
+                border-left:4px solid #2e7d32;">
+        <span style="font-size:30px;">💰</span>
+        <div>
+            <p style="font-size:22px; font-weight:700; color:#2e7d32;">
+                ${{ "{:,.2f}".format(total_ingresos | float) }}
+            </p>
+            <p style="font-size:12px; color:#888;">Ingresos por servicios</p>
+        </div>
+    </div>
+
+    <div style="background:white; border-radius:12px; padding:20px;
+                box-shadow:0 2px 10px rgba(0,0,0,0.07);
+                display:flex; align-items:center; gap:14px;
+                border-left:4px solid #7b1fa2;">
+        <span style="font-size:30px;">⭐</span>
+        <div>
+            <p style="font-size:16px; font-weight:700; color:#7b1fa2;">
+                {{ mas_popular.nombre | title if mas_popular else '—' }}
+            </p>
+            <p style="font-size:12px; color:#888;">
+                Servicio más popular
+                {% if mas_popular %}({{ mas_popular.total }} consumos){% endif %}
+            </p>
+        </div>
+    </div>
+
+</div>
+
+<!-- Tabla -->
+<div class="table-container">
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nombre</th>
+                <th>Descripción</th>
+                <th>Precio</th>
+                <th>Consumos</th>
+                <th>Ingresos Generados</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for s in servicios %}
+            <tr>
+                <td style="color:#888;">#{{ s.servicio_id }}</td>
+                <td>
+                    <strong>{{ s.nombre | title }}</strong>
+                </td>
+                <td style="color:#888; font-size:13px;">
+                    {{ s.descripcion or '—' }}
+                </td>
+                <td>
+                    <strong style="color:#C9A84C;">
+                        ${{ "{:,.2f}".format(s.precio | float) }}
+                    </strong>
+                </td>
+                <td style="text-align:center;">
+                    <span style="background:#e3f2fd; color:#0d47a1; padding:3px 10px;
+                                 border-radius:20px; font-size:12px; font-weight:600;">
+                        {{ s.total_consumos }}
+                    </span>
+                </td>
+                <td>
+                    <strong style="color:#2e7d32;">
+                        ${{ "{:,.2f}".format(s.ingresos_total | float) }}
+                    </strong>
+                </td>
+                <td class="actions">
+                    <a href="{{ url_for('servicios.editar', servicio_id=s.servicio_id) }}"
+                       class="btn btn-sm btn-primary">Editar</a>
+                    <form method="POST"
+                          action="{{ url_for('servicios.eliminar', servicio_id=s.servicio_id) }}"
+                          onsubmit="return confirm('¿Eliminar servicio {{ s.nombre }}?')"
+                          style="margin:0;">
+                        <button type="submit" class="btn btn-sm btn-danger">Eliminar</button>
+                    </form>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="7" class="empty-row">No hay servicios registrados.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% endblock %}

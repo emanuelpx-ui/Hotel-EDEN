@@ -1,0 +1,240 @@
+{% extends "admin/base.html" %}
+{% block title %}Detalle Empleado{% endblock %}
+{% block page_title %}Perfil del Empleado{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div>
+        <h1 style="font-size:22px; font-weight:700; color:#1B2A4A;">
+            {{ empleado.nombre }} {{ empleado.apellido }}
+        </h1>
+        <p class="page-subtitle">
+            {{ empleado.rol_nombre | title }} —
+            {% if empleado.activo %}
+                <span style="color:#2e7d32; font-weight:600;">✅ Activo</span>
+            {% else %}
+                <span style="color:#c62828; font-weight:600;">⛔ Inactivo</span>
+            {% endif %}
+        </p>
+    </div>
+    <div style="display:flex; gap:10px;">
+        <a href="{{ url_for('empleados.editar', empleado_id=empleado.empleado_id) }}"
+           class="btn btn-primary">✏️ Editar</a>
+        <!-- Activar / Desactivar -->
+        <form method="POST"
+              action="{{ url_for('empleados.toggle_activo', empleado_id=empleado.empleado_id) }}"
+              style="margin:0;">
+            <button type="submit" class="btn {{ 'btn-danger' if empleado.activo else 'btn-secondary' }}">
+                {{ '⛔ Desactivar' if empleado.activo else '✅ Activar' }}
+            </button>
+        </form>
+        <a href="{{ url_for('empleados.listar') }}" class="btn btn-secondary">← Volver</a>
+    </div>
+</div>
+
+<!-- Fila 1: Datos + Turno hoy + Usuario sistema -->
+<div style="display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-bottom:18px;">
+
+    <!-- Datos personales -->
+    <div style="background:white; border-radius:12px; padding:24px;
+                box-shadow:0 2px 10px rgba(0,0,0,0.07);">
+        <p style="font-size:14px; font-weight:700; color:#C9A84C;
+                  text-transform:uppercase; letter-spacing:1px; margin-bottom:18px;">
+            👔 Datos del Empleado
+        </p>
+        <div style="display:flex; flex-direction:column; gap:11px;">
+
+            <div style="display:flex; justify-content:space-between;
+                        border-bottom:1px solid #f0f2f5; padding-bottom:9px;">
+                <span style="font-size:13px; color:#888;">Nombre completo</span>
+                <span style="font-size:13.5px; font-weight:600; color:#1B2A4A;">
+                    {{ empleado.nombre }} {{ empleado.apellido }}
+                </span>
+            </div>
+
+            <div style="display:flex; justify-content:space-between;
+                        border-bottom:1px solid #f0f2f5; padding-bottom:9px;">
+                <span style="font-size:13px; color:#888;">Email</span>
+                <span style="font-size:13.5px; color:#1B2A4A;">{{ empleado.email }}</span>
+            </div>
+
+            <div style="display:flex; justify-content:space-between;
+                        border-bottom:1px solid #f0f2f5; padding-bottom:9px;">
+                <span style="font-size:13px; color:#888;">Teléfono</span>
+                <span style="font-size:13.5px; color:#1B2A4A;">{{ empleado.telefono or '—' }}</span>
+            </div>
+
+            <div style="display:flex; justify-content:space-between;
+                        border-bottom:1px solid #f0f2f5; padding-bottom:9px;">
+                <span style="font-size:13px; color:#888;">Rol</span>
+                <span style="background:#e3f2fd; color:#0d47a1; padding:3px 10px;
+                             border-radius:20px; font-size:12px; font-weight:600;">
+                    {{ empleado.rol_nombre | title }}
+                </span>
+            </div>
+
+            <div style="display:flex; justify-content:space-between;">
+                <span style="font-size:13px; color:#888;">Estado</span>
+                {% if empleado.activo %}
+                    <span style="background:#e8f5e9; color:#2e7d32; padding:3px 10px;
+                                 border-radius:20px; font-size:12px; font-weight:600;">
+                        ✅ Activo
+                    </span>
+                {% else %}
+                    <span style="background:#fce4ec; color:#c62828; padding:3px 10px;
+                                 border-radius:20px; font-size:12px; font-weight:600;">
+                        ⛔ Inactivo
+                    </span>
+                {% endif %}
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Turno hoy + Usuario sistema -->
+    <div style="display:flex; flex-direction:column; gap:14px;">
+
+        <!-- Turno hoy -->
+        <div style="background:white; border-radius:12px; padding:22px;
+                    box-shadow:0 2px 10px rgba(0,0,0,0.07);">
+            <p style="font-size:14px; font-weight:700; color:#C9A84C;
+                      text-transform:uppercase; letter-spacing:1px; margin-bottom:14px;">
+                🕐 Turno de Hoy
+            </p>
+            {% if turno_hoy %}
+                <div style="background:#e8f5e9; border-radius:10px; padding:14px;">
+                    <p style="font-size:14px; font-weight:600; color:#2e7d32; margin-bottom:6px;">
+                        ✅ Trabajando hoy
+                    </p>
+                    <p style="font-size:13px; color:#555;">
+                        {{ turno_hoy.hora_inicio }} — {{ turno_hoy.hora_fin }}
+                    </p>
+                </div>
+            {% else %}
+                <div style="background:#f5f5f5; border-radius:10px; padding:14px;">
+                    <p style="font-size:13.5px; color:#aaa; text-align:center;">
+                        Sin turno asignado hoy
+                    </p>
+                </div>
+            {% endif %}
+            <a href="{{ url_for('turnos.nuevo_para_empleado', empleado_id=empleado.empleado_id) }}"
+               class="btn btn-sm btn-primary" style="margin-top:12px; display:inline-block;">
+                + Asignar Turno
+            </a>
+        </div>
+
+        <!-- Usuario del sistema -->
+        <div style="background:white; border-radius:12px; padding:22px;
+                    box-shadow:0 2px 10px rgba(0,0,0,0.07);">
+            <p style="font-size:14px; font-weight:700; color:#C9A84C;
+                      text-transform:uppercase; letter-spacing:1px; margin-bottom:14px;">
+                🔐 Acceso al Sistema
+            </p>
+            {% if usuario %}
+                <div style="display:flex; flex-direction:column; gap:8px;">
+                    <div style="display:flex; justify-content:space-between;">
+                        <span style="font-size:13px; color:#888;">Usuario</span>
+                        <span style="font-size:13.5px; font-weight:600;">{{ usuario.username }}</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between;">
+                        <span style="font-size:13px; color:#888;">Rol sistema</span>
+                        <span style="font-size:13.5px;">{{ usuario.rol_nombre | title }}</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between;">
+                        <span style="font-size:13px; color:#888;">Estado</span>
+                        {% if usuario.activo %}
+                            <span style="background:#e8f5e9; color:#2e7d32; padding:2px 8px;
+                                         border-radius:20px; font-size:12px; font-weight:600;">
+                                Activo
+                            </span>
+                        {% else %}
+                            <span style="background:#fce4ec; color:#c62828; padding:2px 8px;
+                                         border-radius:20px; font-size:12px; font-weight:600;">
+                                Inactivo
+                            </span>
+                        {% endif %}
+                    </div>
+                </div>
+            {% else %}
+                <p style="font-size:13px; color:#aaa; margin-bottom:14px;">
+                    Este empleado no tiene acceso al sistema.
+                </p>
+                <!-- Formulario crear usuario -->
+                <form method="POST"
+                      action="{{ url_for('empleados.crear_usuario', empleado_id=empleado.empleado_id) }}">
+                    <div style="display:flex; flex-direction:column; gap:10px;">
+                        <input type="text" name="username"
+                               placeholder="Nombre de usuario" required
+                               style="padding:9px; border:1.5px solid #dde1e7;
+                                      border-radius:8px; font-size:13.5px; outline:none;">
+                        <input type="password" name="password"
+                               placeholder="Contraseña" required
+                               style="padding:9px; border:1.5px solid #dde1e7;
+                                      border-radius:8px; font-size:13.5px; outline:none;">
+                        <select name="rol_id" required
+                                style="padding:9px; border:1.5px solid #dde1e7;
+                                       border-radius:8px; font-size:13.5px; outline:none;">
+                            <option value="">Rol del sistema...</option>
+                            {% for r in empleado.keys() %}{% endfor %}
+                            {% set roles_sistema = [
+                                (1,'Recepción'),(2,'Limpieza'),(3,'Gerencia'),
+                                (4,'Mantenimiento'),(5,'Administración'),(6,'Seguridad'),
+                                (7,'Concierge'),(8,'Cocina'),(9,'Atención al cliente')
+                            ] %}
+                            {% for rid, rnom in roles_sistema %}
+                            <option value="{{ rid }}">{{ rnom }}</option>
+                            {% endfor %}
+                        </select>
+                        <button type="submit" class="btn btn-primary">
+                            🔐 Crear Acceso
+                        </button>
+                    </div>
+                </form>
+            {% endif %}
+        </div>
+
+    </div>
+</div>
+
+<!-- Historial de turnos -->
+<div style="background:white; border-radius:12px;
+            box-shadow:0 2px 10px rgba(0,0,0,0.07); overflow:hidden;">
+
+    <div style="padding:16px 24px; border-bottom:1px solid #f0f2f5;
+                display:flex; justify-content:space-between; align-items:center;">
+        <p style="font-size:15px; font-weight:700; color:#1B2A4A;">
+            📋 Historial de Turnos
+        </p>
+        <span style="font-size:13px; color:#888;">{{ turnos | length }} turno(s)</span>
+    </div>
+
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Fecha Inicio</th>
+                <th>Hora Inicio</th>
+                <th>Fecha Fin</th>
+                <th>Hora Fin</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for t in turnos %}
+            <tr>
+                <td style="color:#888;">#{{ t.turno_id }}</td>
+                <td>{{ t.fecha_inicio }}</td>
+                <td><strong>{{ t.hora_inicio }}</strong></td>
+                <td>{{ t.fecha_fin }}</td>
+                <td><strong>{{ t.hora_fin }}</strong></td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="5" class="empty-row">No hay turnos registrados.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% endblock %}

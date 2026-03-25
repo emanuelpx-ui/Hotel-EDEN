@@ -1,0 +1,159 @@
+{% extends "admin/base.html" %}
+{% block title %}Habitaciones{% endblock %}
+{% block page_title %}Gestión de Habitaciones{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div>
+        <h1 style="font-size:22px; font-weight:700; color:#1B2A4A;">Habitaciones</h1>
+        <p class="page-subtitle">{{ habitaciones | length }} habitación(es) encontrada(s)</p>
+    </div>
+    <a href="{{ url_for('habitaciones.nueva') }}" class="btn btn-primary">+ Nueva Habitación</a>
+</div>
+
+<!-- Filtros -->
+<div class="filters-bar">
+    <form method="GET" class="filters-form">
+
+        <select name="hotel_id" onchange="this.form.submit()">
+            <option value="">Todos los hoteles</option>
+            {% for h in hoteles %}
+            <option value="{{ h.hotel_id }}"
+                {{ 'selected' if filtro_hotel == h.hotel_id|string }}>
+                {{ h.nombre }}
+            </option>
+            {% endfor %}
+        </select>
+
+        <select name="tipo" onchange="this.form.submit()">
+            <option value="">Todos los tipos</option>
+            {% for t in tipos %}
+            <option value="{{ t }}" {{ 'selected' if filtro_tipo == t }}>
+                {{ t | title }}
+            </option>
+            {% endfor %}
+        </select>
+
+        <select name="estado" onchange="this.form.submit()">
+            <option value="">Todos los estados</option>
+            {% for e in estados %}
+            <option value="{{ e }}" {{ 'selected' if filtro_estado == e }}>
+                {{ e | title }}
+            </option>
+            {% endfor %}
+        </select>
+
+        {% if filtro_estado or filtro_tipo or filtro_hotel %}
+        <a href="{{ url_for('habitaciones.listar') }}" class="btn btn-secondary btn-sm">
+            Limpiar filtros
+        </a>
+        {% endif %}
+
+    </form>
+</div>
+
+<!-- Tabla -->
+<div class="table-container">
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Núm.</th>
+                <th>Piso</th>
+                <th>Hotel</th>
+                <th>Tipo</th>
+                <th>Capacidad</th>
+                <th>Mascotas</th>
+                <th>Precio/Noche</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for h in habitaciones %}
+            <tr>
+                <td><strong>{{ h.numero }}</strong></td>
+                <td>{{ h.piso or '—' }}</td>
+                <td>{{ h.hotel_nombre }}</td>
+                <td>{{ h.tipo | title }}</td>
+                <td>
+                    {{ h.capacidad_adultos }} adultos
+                    {% if h.capacidad_menores %}
+                        / {{ h.capacidad_menores }} menores
+                    {% endif %}
+                </td>
+                <td style="text-align:center;">
+                    {{ '✅' if h.permite_mascotas else '❌' }}
+                </td>
+                <td><strong>${{ "{:,.2f}".format(h.precio_base | float) }}</strong></td>
+                <td>
+                    <!-- Badge de estado con color -->
+                    {% if h.estado == 'disponible' %}
+                        <span style="background:#e8f5e9; color:#2e7d32; padding:4px 12px;
+                                     border-radius:20px; font-size:12px; font-weight:600;">
+                            🟢 Disponible
+                        </span>
+                    {% elif h.estado == 'ocupada' %}
+                        <span style="background:#fce4ec; color:#c62828; padding:4px 12px;
+                                     border-radius:20px; font-size:12px; font-weight:600;">
+                            🔴 Ocupada
+                        </span>
+                    {% elif h.estado == 'reservada' %}
+                        <span style="background:#e3f2fd; color:#0d47a1; padding:4px 12px;
+                                     border-radius:20px; font-size:12px; font-weight:600;">
+                            🔵 Reservada
+                        </span>
+                    {% elif h.estado == 'mantenimiento' %}
+                        <span style="background:#efebe9; color:#4e342e; padding:4px 12px;
+                                     border-radius:20px; font-size:12px; font-weight:600;">
+                            ⚙️ Mantenimiento
+                        </span>
+                    {% elif h.estado == 'limpieza' %}
+                        <span style="background:#fff9c4; color:#f57f17; padding:4px 12px;
+                                     border-radius:20px; font-size:12px; font-weight:600;">
+                            🟡 Limpieza
+                        </span>
+                    {% elif h.estado == 'bloqueada' %}
+                        <span style="background:#f3e5f5; color:#6a1b9a; padding:4px 12px;
+                                     border-radius:20px; font-size:12px; font-weight:600;">
+                            🚫 Bloqueada
+                        </span>
+                    {% endif %}
+                </td>
+                <td class="actions">
+                    <!-- Cambio rápido de estado -->
+                    <form method="POST"
+                          action="{{ url_for('habitaciones.cambiar_estado', habitacion_id=h.habitacion_id) }}"
+                          style="margin:0;">
+                        <select name="estado" onchange="this.form.submit()"
+                                style="padding:4px 8px; border-radius:6px; border:1px solid #ddd;
+                                       font-size:12px; cursor:pointer;">
+                            {% for e in estados %}
+                            <option value="{{ e }}" {{ 'selected' if h.estado == e }}>
+                                {{ e | title }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </form>
+                    <a href="{{ url_for('habitaciones.detalle', habitacion_id=h.habitacion_id) }}"
+                       class="btn btn-sm btn-secondary">Ver</a>
+                    <a href="{{ url_for('habitaciones.editar', habitacion_id=h.habitacion_id) }}"
+                       class="btn btn-sm btn-primary">Editar</a>
+                    <form method="POST"
+                          action="{{ url_for('habitaciones.eliminar', habitacion_id=h.habitacion_id) }}"
+                          onsubmit="return confirm('¿Eliminar habitación {{ h.numero }}?')"
+                          style="margin:0;">
+                        <button type="submit" class="btn btn-sm btn-danger">Eliminar</button>
+                    </form>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="9" class="empty-row">No hay habitaciones registradas.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% endblock %}

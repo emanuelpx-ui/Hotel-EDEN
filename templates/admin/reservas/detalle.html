@@ -1,0 +1,317 @@
+{% extends "admin/base.html" %}
+{% block title %}Detalle Reserva{% endblock %}
+{% block page_title %}Detalle de Reserva{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div>
+        <h1 style="font-size:22px; font-weight:700; color:#1B2A4A;">
+            Reserva #{{ reserva.reserva_id }}
+        </h1>
+        <p class="page-subtitle">
+            {{ reserva.cliente }} — {{ reserva.hotel }} · Hab. {{ reserva.habitacion }}
+        </p>
+    </div>
+    <div style="display:flex; gap:10px;">
+        <a href="{{ url_for('reservas.editar', reserva_id=reserva.reserva_id) }}"
+           class="btn btn-primary">✏️ Editar</a>
+        <a href="{{ url_for('reservas.listar') }}"
+           class="btn btn-secondary">← Volver</a>
+    </div>
+</div>
+
+<!-- Fila 1: Info reserva + Estado -->
+<div style="display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-bottom:18px;">
+
+    <!-- Info general -->
+    <div style="background:white; border-radius:12px; padding:24px;
+                box-shadow:0 2px 10px rgba(0,0,0,0.07);">
+        <p style="font-size:14px; font-weight:700; color:#C9A84C;
+                  text-transform:uppercase; letter-spacing:1px; margin-bottom:18px;">
+            📋 Información General
+        </p>
+        <div style="display:flex; flex-direction:column; gap:11px;">
+
+            <div style="display:flex; justify-content:space-between;
+                        border-bottom:1px solid #f0f2f5; padding-bottom:9px;">
+                <span style="font-size:13px; color:#888;">Cliente</span>
+                <a href="{{ url_for('clientes.detalle', cliente_id=reserva.cliente_id) }}"
+                   style="font-size:13.5px; font-weight:600; color:#1B2A4A;
+                          text-decoration:none;">
+                    {{ reserva.cliente }} →
+                </a>
+            </div>
+
+            <div style="display:flex; justify-content:space-between;
+                        border-bottom:1px solid #f0f2f5; padding-bottom:9px;">
+                <span style="font-size:13px; color:#888;">Email</span>
+                <span style="font-size:13.5px; color:#1B2A4A;">{{ reserva.email or '—' }}</span>
+            </div>
+
+            <div style="display:flex; justify-content:space-between;
+                        border-bottom:1px solid #f0f2f5; padding-bottom:9px;">
+                <span style="font-size:13px; color:#888;">Teléfono</span>
+                <span style="font-size:13.5px; color:#1B2A4A;">{{ reserva.telefono or '—' }}</span>
+            </div>
+
+            <div style="display:flex; justify-content:space-between;
+                        border-bottom:1px solid #f0f2f5; padding-bottom:9px;">
+                <span style="font-size:13px; color:#888;">Hotel</span>
+                <span style="font-size:13.5px; font-weight:600; color:#1B2A4A;">{{ reserva.hotel }}</span>
+            </div>
+
+            <div style="display:flex; justify-content:space-between;
+                        border-bottom:1px solid #f0f2f5; padding-bottom:9px;">
+                <span style="font-size:13px; color:#888;">Habitación</span>
+                <span style="font-size:13.5px; color:#1B2A4A;">
+                    Hab. {{ reserva.habitacion }} — {{ reserva.tipo_hab | title }}
+                </span>
+            </div>
+
+            <div style="display:flex; justify-content:space-between;
+                        border-bottom:1px solid #f0f2f5; padding-bottom:9px;">
+                <span style="font-size:13px; color:#888;">Entrada</span>
+                <span style="font-size:13.5px; font-weight:600; color:#1B2A4A;">{{ reserva.fecha_inicio }}</span>
+            </div>
+
+            <div style="display:flex; justify-content:space-between;
+                        border-bottom:1px solid #f0f2f5; padding-bottom:9px;">
+                <span style="font-size:13px; color:#888;">Salida</span>
+                <span style="font-size:13.5px; font-weight:600; color:#1B2A4A;">{{ reserva.fecha_fin }}</span>
+            </div>
+
+            <div style="display:flex; justify-content:space-between;">
+                <span style="font-size:13px; color:#888;">Huéspedes</span>
+                <span style="font-size:13.5px; color:#1B2A4A;">
+                    {{ reserva.num_adultos }} adultos
+                    {% if reserva.num_menores %} / {{ reserva.num_menores }} menores {% endif %}
+                    {% if reserva.num_mascotas %} / {{ reserva.num_mascotas }} 🐾 {% endif %}
+                </span>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Estado + Resumen financiero -->
+    <div style="display:flex; flex-direction:column; gap:14px;">
+
+        <!-- Estado actual -->
+        <div style="background:white; border-radius:12px; padding:22px;
+                    box-shadow:0 2px 10px rgba(0,0,0,0.07);">
+            <p style="font-size:14px; font-weight:700; color:#C9A84C;
+                      text-transform:uppercase; letter-spacing:1px; margin-bottom:14px;">
+                🔄 Estado
+            </p>
+
+            <!-- Badge grande -->
+            <div style="text-align:center; margin-bottom:16px;">
+                {% if reserva.estado == 'pendiente' %}
+                    <div style="background:#fff8e1; color:#f57f17; padding:12px 20px;
+                                border-radius:10px; font-size:16px; font-weight:700; display:inline-block;">
+                        ⏳ Pendiente
+                    </div>
+                {% elif reserva.estado == 'confirmada' %}
+                    <div style="background:#e8f5e9; color:#2e7d32; padding:12px 20px;
+                                border-radius:10px; font-size:16px; font-weight:700; display:inline-block;">
+                        ✅ Confirmada
+                    </div>
+                {% elif reserva.estado == 'cancelada' %}
+                    <div style="background:#fce4ec; color:#c62828; padding:12px 20px;
+                                border-radius:10px; font-size:16px; font-weight:700; display:inline-block;">
+                        ❌ Cancelada
+                    </div>
+                {% elif reserva.estado == 'check-in' %}
+                    <div style="background:#e3f2fd; color:#0d47a1; padding:12px 20px;
+                                border-radius:10px; font-size:16px; font-weight:700; display:inline-block;">
+                        🏨 Check-in
+                    </div>
+                {% elif reserva.estado == 'check-out' %}
+                    <div style="background:#f3e5f5; color:#6a1b9a; padding:12px 20px;
+                                border-radius:10px; font-size:16px; font-weight:700; display:inline-block;">
+                        🚪 Check-out
+                    </div>
+                {% elif reserva.estado == 'finalizada' %}
+                    <div style="background:#efebe9; color:#4e342e; padding:12px 20px;
+                                border-radius:10px; font-size:16px; font-weight:700; display:inline-block;">
+                        🏁 Finalizada
+                    </div>
+                {% elif reserva.estado == 'no-show' %}
+                    <div style="background:#ffebee; color:#b71c1c; padding:12px 20px;
+                                border-radius:10px; font-size:16px; font-weight:700; display:inline-block;">
+                        👻 No-show
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Cambio rápido -->
+            <form method="POST"
+                  action="{{ url_for('reservas.cambiar_estado', reserva_id=reserva.reserva_id) }}">
+                <div style="display:flex; gap:10px;">
+                    <select name="estado"
+                            style="flex:1; padding:9px; border-radius:8px;
+                                   border:1.5px solid #dde1e7; font-size:13.5px; outline:none;">
+                        {% for e in estados %}
+                        <option value="{{ e }}" {{ 'selected' if reserva.estado == e }}>
+                            {{ e | title }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                    <button type="submit" class="btn btn-primary">Cambiar</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Resumen financiero -->
+        <div style="background:white; border-radius:12px; padding:22px;
+                    box-shadow:0 2px 10px rgba(0,0,0,0.07);">
+            <p style="font-size:14px; font-weight:700; color:#C9A84C;
+                      text-transform:uppercase; letter-spacing:1px; margin-bottom:14px;">
+                💰 Resumen Financiero
+            </p>
+            <div style="display:flex; flex-direction:column; gap:10px;">
+
+                <div style="display:flex; justify-content:space-between;
+                            border-bottom:1px solid #f0f2f5; padding-bottom:8px;">
+                    <span style="font-size:13px; color:#888;">Total reserva</span>
+                    <span style="font-size:14px; font-weight:700; color:#1B2A4A;">
+                        ${{ "{:,.2f}".format(reserva.total | float) }}
+                    </span>
+                </div>
+
+                <div style="display:flex; justify-content:space-between;
+                            border-bottom:1px solid #f0f2f5; padding-bottom:8px;">
+                    <span style="font-size:13px; color:#888;">Total pagado</span>
+                    <span style="font-size:14px; font-weight:600; color:#2e7d32;">
+                        ${{ "{:,.2f}".format(total_pagado | float) }}
+                    </span>
+                </div>
+
+                <div style="display:flex; justify-content:space-between;">
+                    <span style="font-size:13px; color:#888;">Saldo pendiente</span>
+                    <span style="font-size:14px; font-weight:700;
+                                 color:{{ '#c62828' if saldo_pendiente > 0 else '#2e7d32' }};">
+                        ${{ "{:,.2f}".format(saldo_pendiente | float) }}
+                    </span>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- Fila 2: Pagos -->
+<div style="background:white; border-radius:12px;
+            box-shadow:0 2px 10px rgba(0,0,0,0.07);
+            overflow:hidden; margin-bottom:18px;">
+
+    <div style="padding:16px 24px; border-bottom:1px solid #f0f2f5;
+                display:flex; justify-content:space-between; align-items:center;">
+        <p style="font-size:15px; font-weight:700; color:#1B2A4A;">💳 Pagos</p>
+        <a href="{{ url_for('pagos.nuevo_desde_reserva', reserva_id=reserva.reserva_id) }}"
+            class="btn btn-sm btn-primary">+ Registrar Pago</a>
+    </div>
+
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Fecha</th>
+                <th>Monto</th>
+                <th>Método</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for p in pagos %}
+            <tr>
+                <td style="color:#888;">#{{ p.pago_id }}</td>
+                <td>{{ p.fecha_pago }}</td>
+                <td><strong>${{ "{:,.2f}".format(p.monto | float) }}</strong></td>
+                <td>{{ p.metodo | title }}</td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="4" class="empty-row">No hay pagos registrados.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Fila 3: Consumos -->
+<div style="background:white; border-radius:12px;
+            box-shadow:0 2px 10px rgba(0,0,0,0.07);
+            overflow:hidden; margin-bottom:18px;">
+
+    <div style="padding:16px 24px; border-bottom:1px solid #f0f2f5;
+                display:flex; justify-content:space-between; align-items:center;">
+        <p style="font-size:15px; font-weight:700; color:#1B2A4A;">🍽️ Consumos</p>
+        <a href="{{ url_for('consumos.nuevo_desde_reserva', reserva_id=reserva.reserva_id) }}"
+            class="btn btn-sm btn-primary">+ Agregar Consumo</a>
+    </div>
+
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Servicio</th>
+                <th>Fecha</th>
+                <th>Cantidad</th>
+                <th>Subtotal</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for c in consumos %}
+            <tr>
+                <td>{{ c.servicio | title }}</td>
+                <td>{{ c.fecha }}</td>
+                <td>{{ c.cantidad }}</td>
+                <td><strong>${{ "{:,.2f}".format(c.subtotal | float) }}</strong></td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="4" class="empty-row">No hay consumos registrados.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Fila 4: Mascotas -->
+{% if reserva.num_mascotas %}
+<div style="background:white; border-radius:12px;
+            box-shadow:0 2px 10px rgba(0,0,0,0.07);
+            overflow:hidden;">
+
+    <div style="padding:16px 24px; border-bottom:1px solid #f0f2f5;">
+        <p style="font-size:15px; font-weight:700; color:#1B2A4A;">🐾 Mascotas</p>
+    </div>
+
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Tipo</th>
+                <th>Peso</th>
+                <th>Observaciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for m in mascotas %}
+            <tr>
+                <td><strong>{{ m.nombre }}</strong></td>
+                <td>{{ m.tipo | title }}</td>
+                <td>{{ m.peso }} kg</td>
+                <td>{{ m.observaciones or '—' }}</td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="4" class="empty-row">No hay mascotas registradas.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+
+{% endblock %}

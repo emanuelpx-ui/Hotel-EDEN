@@ -1,0 +1,150 @@
+{% extends "admin/base.html" %}
+{% block title %}Empleados{% endblock %}
+{% block page_title %}Gestión de Empleados{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div>
+        <h1 style="font-size:22px; font-weight:700; color:#1B2A4A;">Empleados</h1>
+        <p class="page-subtitle">{{ empleados | length }} empleado(s) encontrado(s)</p>
+    </div>
+    <a href="{{ url_for('empleados.nuevo') }}" class="btn btn-primary">+ Nuevo Empleado</a>
+</div>
+
+<!-- Tarjetas resumen -->
+<div style="display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-bottom:24px;">
+
+    <div style="background:white; border-radius:12px; padding:20px;
+                box-shadow:0 2px 10px rgba(0,0,0,0.07);
+                display:flex; align-items:center; gap:14px;
+                border-left:4px solid #1B2A4A;">
+        <span style="font-size:30px;">👔</span>
+        <div>
+            <p style="font-size:22px; font-weight:700; color:#1B2A4A;">
+                {{ empleados | length }}
+            </p>
+            <p style="font-size:12px; color:#888;">Total empleados</p>
+        </div>
+    </div>
+
+    <div style="background:white; border-radius:12px; padding:20px;
+                box-shadow:0 2px 10px rgba(0,0,0,0.07);
+                display:flex; align-items:center; gap:14px;
+                border-left:4px solid #2e7d32;">
+        <span style="font-size:30px;">✅</span>
+        <div>
+            <p style="font-size:22px; font-weight:700; color:#2e7d32;">
+                {{ total_activos }}
+            </p>
+            <p style="font-size:12px; color:#888;">Activos</p>
+        </div>
+    </div>
+
+    <div style="background:white; border-radius:12px; padding:20px;
+                box-shadow:0 2px 10px rgba(0,0,0,0.07);
+                display:flex; align-items:center; gap:14px;
+                border-left:4px solid #c62828;">
+        <span style="font-size:30px;">⛔</span>
+        <div>
+            <p style="font-size:22px; font-weight:700; color:#c62828;">
+                {{ total_inactivos }}
+            </p>
+            <p style="font-size:12px; color:#888;">Inactivos</p>
+        </div>
+    </div>
+
+</div>
+
+<!-- Filtros -->
+<div class="filters-bar">
+    <form method="GET" class="filters-form">
+
+        <select name="rol_id" onchange="this.form.submit()">
+            <option value="">Todos los roles</option>
+            {% for r in roles %}
+            <option value="{{ r.rol_id }}"
+                {{ 'selected' if filtro_rol == r.rol_id|string }}>
+                {{ r.nombre | title }}
+            </option>
+            {% endfor %}
+        </select>
+
+        <select name="activo" onchange="this.form.submit()">
+            <option value="">Todos</option>
+            <option value="true"  {{ 'selected' if filtro_activo == 'true' }}>✅ Activos</option>
+            <option value="false" {{ 'selected' if filtro_activo == 'false' }}>⛔ Inactivos</option>
+        </select>
+
+        {% if filtro_rol or filtro_activo %}
+        <a href="{{ url_for('empleados.listar') }}" class="btn btn-secondary btn-sm">
+            Limpiar filtros
+        </a>
+        {% endif %}
+
+    </form>
+</div>
+
+<!-- Tabla -->
+<div class="table-container">
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nombre</th>
+                <th>Email</th>
+                <th>Teléfono</th>
+                <th>Rol</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for e in empleados %}
+            <tr>
+                <td style="color:#888;">#{{ e.empleado_id }}</td>
+                <td><strong>{{ e.apellido }}, {{ e.nombre }}</strong></td>
+                <td>{{ e.email }}</td>
+                <td>{{ e.telefono or '—' }}</td>
+                <td>
+                    <span style="background:#e3f2fd; color:#0d47a1; padding:3px 10px;
+                                 border-radius:20px; font-size:12px; font-weight:600;">
+                        {{ e.rol_nombre | title }}
+                    </span>
+                </td>
+                <td>
+                    {% if e.activo %}
+                        <span style="background:#e8f5e9; color:#2e7d32; padding:3px 10px;
+                                     border-radius:20px; font-size:12px; font-weight:600;">
+                            ✅ Activo
+                        </span>
+                    {% else %}
+                        <span style="background:#fce4ec; color:#c62828; padding:3px 10px;
+                                     border-radius:20px; font-size:12px; font-weight:600;">
+                            ⛔ Inactivo
+                        </span>
+                    {% endif %}
+                </td>
+                <td class="actions">
+                    <a href="{{ url_for('empleados.detalle', empleado_id=e.empleado_id) }}"
+                       class="btn btn-sm btn-secondary">Ver</a>
+                    <a href="{{ url_for('empleados.editar', empleado_id=e.empleado_id) }}"
+                       class="btn btn-sm btn-primary">Editar</a>
+                    <form method="POST"
+                          action="{{ url_for('empleados.eliminar', empleado_id=e.empleado_id) }}"
+                          onsubmit="return confirm('¿Eliminar a {{ e.nombre }} {{ e.apellido }}?')"
+                          style="margin:0;">
+                        <button type="submit" class="btn btn-sm btn-danger">Eliminar</button>
+                    </form>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="7" class="empty-row">No hay empleados registrados.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% endblock %}

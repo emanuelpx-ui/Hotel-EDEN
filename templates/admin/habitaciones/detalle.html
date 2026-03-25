@@ -1,0 +1,220 @@
+{% extends "admin/base.html" %}
+{% block title %}Detalle Habitación{% endblock %}
+{% block page_title %}Detalle de Habitación{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div>
+        <h1 style="font-size:22px; font-weight:700; color:#1B2A4A;">
+            Habitación {{ habitacion.numero }}
+        </h1>
+        <p class="page-subtitle">
+            {{ habitacion.hotel_nombre }} —
+            Piso {{ habitacion.piso or '—' }} —
+            {{ habitacion.tipo | title }}
+        </p>
+    </div>
+    <div style="display:flex; gap:10px;">
+        <a href="{{ url_for('habitaciones.editar', habitacion_id=habitacion.habitacion_id) }}"
+           class="btn btn-primary">✏️ Editar</a>
+        <a href="{{ url_for('habitaciones.listar') }}"
+           class="btn btn-secondary">← Volver</a>
+    </div>
+</div>
+
+<!-- Info + Estado -->
+<div style="display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-bottom:24px;">
+
+    <!-- Datos de la habitación -->
+    <div style="background:white; border-radius:12px; padding:24px;
+                box-shadow:0 2px 10px rgba(0,0,0,0.07);">
+        <p style="font-size:14px; font-weight:700; color:#C9A84C;
+                  text-transform:uppercase; letter-spacing:1px; margin-bottom:18px;">
+            🛏️ Información
+        </p>
+
+        <div style="display:flex; flex-direction:column; gap:12px;">
+
+            <div style="display:flex; justify-content:space-between;
+                        border-bottom:1px solid #f0f2f5; padding-bottom:10px;">
+                <span style="font-size:13px; color:#888;">Hotel</span>
+                <span style="font-size:13.5px; font-weight:600; color:#1B2A4A;">
+                    {{ habitacion.hotel_nombre }}
+                </span>
+            </div>
+
+            <div style="display:flex; justify-content:space-between;
+                        border-bottom:1px solid #f0f2f5; padding-bottom:10px;">
+                <span style="font-size:13px; color:#888;">Número</span>
+                <span style="font-size:13.5px; font-weight:600; color:#1B2A4A;">
+                    {{ habitacion.numero }}
+                </span>
+            </div>
+
+            <div style="display:flex; justify-content:space-between;
+                        border-bottom:1px solid #f0f2f5; padding-bottom:10px;">
+                <span style="font-size:13px; color:#888;">Piso</span>
+                <span style="font-size:13.5px; color:#1B2A4A;">
+                    {{ habitacion.piso or '—' }}
+                </span>
+            </div>
+
+            <div style="display:flex; justify-content:space-between;
+                        border-bottom:1px solid #f0f2f5; padding-bottom:10px;">
+                <span style="font-size:13px; color:#888;">Tipo</span>
+                <span style="font-size:13.5px; color:#1B2A4A;">
+                    {{ habitacion.tipo | title }}
+                </span>
+            </div>
+
+            <div style="display:flex; justify-content:space-between;
+                        border-bottom:1px solid #f0f2f5; padding-bottom:10px;">
+                <span style="font-size:13px; color:#888;">Capacidad</span>
+                <span style="font-size:13.5px; color:#1B2A4A;">
+                    {{ habitacion.capacidad_adultos }} adultos /
+                    {{ habitacion.capacidad_menores }} menores
+                </span>
+            </div>
+
+            <div style="display:flex; justify-content:space-between;
+                        border-bottom:1px solid #f0f2f5; padding-bottom:10px;">
+                <span style="font-size:13px; color:#888;">Precio por noche</span>
+                <span style="font-size:13.5px; font-weight:700; color:#7b1fa2;">
+                    ${{ "{:,.2f}".format(habitacion.precio_base | float) }}
+                </span>
+            </div>
+
+            <div style="display:flex; justify-content:space-between;">
+                <span style="font-size:13px; color:#888;">Permite mascotas</span>
+                <span style="font-size:13.5px; color:#1B2A4A;">
+                    {{ '✅ Sí' if habitacion.permite_mascotas else '❌ No' }}
+                </span>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Estado actual + cambio rápido -->
+    <div style="background:white; border-radius:12px; padding:24px;
+                box-shadow:0 2px 10px rgba(0,0,0,0.07);">
+        <p style="font-size:14px; font-weight:700; color:#C9A84C;
+                  text-transform:uppercase; letter-spacing:1px; margin-bottom:18px;">
+            🔄 Estado Actual
+        </p>
+
+        <!-- Badge grande de estado -->
+        <div style="text-align:center; margin-bottom:28px;">
+            {% if habitacion.estado == 'disponible' %}
+                <div style="background:#e8f5e9; color:#2e7d32; padding:16px 24px;
+                            border-radius:12px; font-size:18px; font-weight:700;
+                            display:inline-block;">
+                    🟢 Disponible
+                </div>
+            {% elif habitacion.estado == 'ocupada' %}
+                <div style="background:#fce4ec; color:#c62828; padding:16px 24px;
+                            border-radius:12px; font-size:18px; font-weight:700;
+                            display:inline-block;">
+                    🔴 Ocupada
+                </div>
+            {% elif habitacion.estado == 'reservada' %}
+                <div style="background:#e3f2fd; color:#0d47a1; padding:16px 24px;
+                            border-radius:12px; font-size:18px; font-weight:700;
+                            display:inline-block;">
+                    🔵 Reservada
+                </div>
+            {% elif habitacion.estado == 'mantenimiento' %}
+                <div style="background:#efebe9; color:#4e342e; padding:16px 24px;
+                            border-radius:12px; font-size:18px; font-weight:700;
+                            display:inline-block;">
+                    ⚙️ Mantenimiento
+                </div>
+            {% elif habitacion.estado == 'limpieza' %}
+                <div style="background:#fff9c4; color:#f57f17; padding:16px 24px;
+                            border-radius:12px; font-size:18px; font-weight:700;
+                            display:inline-block;">
+                    🟡 Limpieza
+                </div>
+            {% elif habitacion.estado == 'bloqueada' %}
+                <div style="background:#f3e5f5; color:#6a1b9a; padding:16px 24px;
+                            border-radius:12px; font-size:18px; font-weight:700;
+                            display:inline-block;">
+                    🚫 Bloqueada
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Cambio rápido de estado -->
+        <p style="font-size:13px; color:#888; margin-bottom:10px;">
+            Cambiar estado:
+        </p>
+        <form method="POST"
+              action="{{ url_for('habitaciones.cambiar_estado', habitacion_id=habitacion.habitacion_id) }}">
+            <div style="display:flex; gap:10px;">
+                <select name="estado"
+                        style="flex:1; padding:10px; border-radius:8px;
+                               border:1.5px solid #dde1e7; font-size:14px; outline:none;">
+                    {% for e in ['disponible','ocupada','reservada','mantenimiento','limpieza','bloqueada'] %}
+                    <option value="{{ e }}" {{ 'selected' if habitacion.estado == e }}>
+                        {{ e | title }}
+                    </option>
+                    {% endfor %}
+                </select>
+                <button type="submit" class="btn btn-primary">Cambiar</button>
+            </div>
+        </form>
+
+    </div>
+</div>
+
+<!-- Historial de reservas -->
+<div style="background:white; border-radius:12px;
+            box-shadow:0 2px 10px rgba(0,0,0,0.07); overflow:hidden;">
+
+    <div style="padding:18px 24px; border-bottom:1px solid #f0f2f5;
+                display:flex; justify-content:space-between; align-items:center;">
+        <p style="font-size:15px; font-weight:700; color:#1B2A4A;">
+            📋 Historial de Reservas
+        </p>
+        <span style="font-size:13px; color:#888;">
+            {{ reservas | length }} reserva(s)
+        </span>
+    </div>
+
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Cliente</th>
+                <th>Entrada</th>
+                <th>Salida</th>
+                <th>Total</th>
+                <th>Estado</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for r in reservas %}
+            <tr>
+                <td style="color:#888;">#{{ r.reserva_id }}</td>
+                <td><strong>{{ r.cliente }}</strong></td>
+                <td>{{ r.fecha_inicio }}</td>
+                <td>{{ r.fecha_fin }}</td>
+                <td><strong>${{ "{:,.2f}".format(r.total | float) }}</strong></td>
+                <td>
+                    <span class="badge badge-{{ r.estado.replace('-','') }}">
+                        {{ r.estado | title }}
+                    </span>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="6" class="empty-row">
+                    Esta habitación no tiene reservas registradas.
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% endblock %}

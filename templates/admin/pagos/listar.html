@@ -1,0 +1,215 @@
+{% extends "admin/base.html" %}
+{% block title %}Pagos{% endblock %}
+{% block page_title %}Gestión de Pagos{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div>
+        <h1 style="font-size:22px; font-weight:700; color:#1B2A4A;">Pagos</h1>
+        <p class="page-subtitle">{{ pagos | length }} registro(s) encontrado(s)</p>
+    </div>
+    <a href="{{ url_for('pagos.nuevo') }}" class="btn btn-primary">+ Registrar Pago</a>
+</div>
+
+<!-- Tarjetas resumen -->
+<div style="display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-bottom:24px;">
+
+    <div style="background:white; border-radius:12px; padding:20px;
+                box-shadow:0 2px 10px rgba(0,0,0,0.07);
+                display:flex; align-items:center; gap:14px;
+                border-left:4px solid #2e7d32;">
+        <span style="font-size:30px;">💰</span>
+        <div>
+            <p style="font-size:22px; font-weight:700; color:#2e7d32;">
+                ${{ "{:,.2f}".format(total_ingresos | float) }}
+            </p>
+            <p style="font-size:12px; color:#888;">Total ingresos</p>
+        </div>
+    </div>
+
+    <div style="background:white; border-radius:12px; padding:20px;
+                box-shadow:0 2px 10px rgba(0,0,0,0.07);
+                display:flex; align-items:center; gap:14px;
+                border-left:4px solid #c62828;">
+        <span style="font-size:30px;">↩️</span>
+        <div>
+            <p style="font-size:22px; font-weight:700; color:#c62828;">
+                ${{ "{:,.2f}".format(total_reembolsos | float) }}
+            </p>
+            <p style="font-size:12px; color:#888;">Total reembolsos</p>
+        </div>
+    </div>
+
+    <div style="background:white; border-radius:12px; padding:20px;
+                box-shadow:0 2px 10px rgba(0,0,0,0.07);
+                display:flex; align-items:center; gap:14px;
+                border-left:4px solid #1B2A4A;">
+        <span style="font-size:30px;">📊</span>
+        <div>
+            <p style="font-size:22px; font-weight:700; color:#1B2A4A;">
+                ${{ "{:,.2f}".format(balance | float) }}
+            </p>
+            <p style="font-size:12px; color:#888;">Balance neto</p>
+        </div>
+    </div>
+
+</div>
+
+<!-- Filtros -->
+<div class="filters-bar">
+    <form method="GET" class="filters-form">
+
+        <select name="tipo" onchange="this.form.submit()">
+            <option value="">Todos los tipos</option>
+            <option value="pago"      {{ 'selected' if filtro_tipo == 'pago' }}>💰 Pagos</option>
+            <option value="reembolso" {{ 'selected' if filtro_tipo == 'reembolso' }}>↩️ Reembolsos</option>
+        </select>
+
+        <select name="metodo" onchange="this.form.submit()">
+            <option value="">Todos los métodos</option>
+            {% for m in metodos %}
+            <option value="{{ m }}" {{ 'selected' if filtro_metodo == m }}>
+                {{ m | title }}
+            </option>
+            {% endfor %}
+        </select>
+
+        <input type="date" name="fecha"
+               value="{{ filtro_fecha }}"
+               style="padding:8px 12px; border:1.5px solid #dde1e7;
+                      border-radius:8px; font-size:13.5px; outline:none;"
+               onchange="this.form.submit()">
+
+        {% if filtro_tipo or filtro_metodo or filtro_fecha %}
+        <a href="{{ url_for('pagos.listar') }}" class="btn btn-secondary btn-sm">
+            Limpiar filtros
+        </a>
+        {% endif %}
+
+    </form>
+</div>
+
+<!-- Tabla -->
+<div class="table-container">
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Reserva</th>
+                <th>Cliente</th>
+                <th>Hotel / Hab.</th>
+                <th>Fecha</th>
+                <th>Método</th>
+                <th>Monto</th>
+                <th>Tipo</th>
+                <th>Notas</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for p in pagos %}
+            <tr>
+                <td style="color:#888;">#{{ p.pago_id }}</td>
+                <td>
+                    <a href="{{ url_for('reservas.detalle', reserva_id=p.reserva_id) }}"
+                       style="color:#1B2A4A; font-weight:600; text-decoration:none;">
+                        #{{ p.reserva_id }} →
+                    </a>
+                </td>
+                <td><strong>{{ p.cliente }}</strong></td>
+                <td>
+                    {{ p.hotel }}<br>
+                    <small class="text-muted">Hab. {{ p.habitacion }}</small>
+                </td>
+                <td>{{ p.fecha_pago }}</td>
+                <td>{{ p.metodo | title }}</td>
+                <td>
+                    <strong style="color:{{ '#2e7d32' if p.tipo == 'pago' else '#c62828' }};">
+                        {{ '-' if p.tipo == 'reembolso' else '' }}
+                        ${{ "{:,.2f}".format(p.monto | float) }}
+                    </strong>
+                </td>
+                <td>
+                    {% if p.tipo == 'pago' %}
+                        <span style="background:#e8f5e9; color:#2e7d32; padding:3px 10px;
+                                     border-radius:20px; font-size:12px; font-weight:600;">
+                            💰 Pago
+                        </span>
+                    {% else %}
+                        <span style="background:#fce4ec; color:#c62828; padding:3px 10px;
+                                     border-radius:20px; font-size:12px; font-weight:600;">
+                            ↩️ Reembolso
+                        </span>
+                    {% endif %}
+                </td>
+                <td style="font-size:12.5px; color:#888;">{{ p.notas or '—' }}</td>
+                <td class="actions">
+                    {% if p.tipo == 'pago' %}
+                    <!-- Botón reembolso -->
+                    <button type="button" class="btn btn-sm btn-secondary"
+                            onclick="document.getElementById('modal-reembolso-{{ p.pago_id }}').style.display='flex'">
+                        ↩️ Reembolso
+                    </button>
+                    {% endif %}
+                    <!-- Eliminar -->
+                    <form method="POST"
+                          action="{{ url_for('pagos.eliminar', pago_id=p.pago_id) }}"
+                          onsubmit="return confirm('¿Eliminar este registro? Esta acción no se puede deshacer.')"
+                          style="margin:0;">
+                        <button type="submit" class="btn btn-sm btn-danger">Eliminar</button>
+                    </form>
+                </td>
+            </tr>
+
+            <!-- Modal reembolso -->
+            {% if p.tipo == 'pago' %}
+            <tr id="modal-reembolso-{{ p.pago_id }}"
+                style="display:none; position:fixed; top:0; left:0; width:100%; height:100%;
+                       background:rgba(0,0,0,0.5); z-index:999;
+                       align-items:center; justify-content:center;">
+                <td colspan="10" style="border:none; padding:0;">
+                    <div style="background:white; border-radius:12px; padding:32px;
+                                width:420px; box-shadow:0 20px 50px rgba(0,0,0,0.3);">
+                        <h3 style="color:#1B2A4A; margin-bottom:6px;">↩️ Registrar Reembolso</h3>
+                        <p style="color:#888; font-size:13px; margin-bottom:20px;">
+                            Pago #{{ p.pago_id }} —
+                            ${{ "{:,.2f}".format(p.monto | float) }} —
+                            {{ p.metodo | title }}
+                        </p>
+                        <form method="POST"
+                              action="{{ url_for('pagos.reembolso', pago_id=p.pago_id) }}">
+                            <div class="form-group" style="margin-bottom:16px;">
+                                <label style="font-size:12.5px; font-weight:600;
+                                              color:#1B2A4A; text-transform:uppercase;">
+                                    Motivo del reembolso
+                                </label>
+                                <input type="text" name="notas"
+                                       placeholder="Ej. Cancelación por cliente"
+                                       style="margin-top:6px;">
+                            </div>
+                            <div style="display:flex; gap:10px; margin-top:20px;">
+                                <button type="submit" class="btn btn-danger">
+                                    Confirmar Reembolso
+                                </button>
+                                <button type="button" class="btn btn-secondary"
+                                        onclick="document.getElementById('modal-reembolso-{{ p.pago_id }}').style.display='none'">
+                                    Cancelar
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% endif %}
+
+            {% else %}
+            <tr>
+                <td colspan="10" class="empty-row">No hay pagos registrados.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% endblock %}

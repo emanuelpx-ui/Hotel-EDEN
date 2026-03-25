@@ -1,0 +1,141 @@
+{% extends "admin/base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+
+{% block content %}
+
+<!-- ── Tarjetas de estadísticas ── -->
+<div style="display:grid; grid-template-columns:repeat(3,1fr); gap:18px; margin-bottom:28px;">
+
+    <!-- Reservas de hoy -->
+    <div style="background:white; border-radius:12px; padding:22px; box-shadow:0 2px 10px rgba(0,0,0,0.07); display:flex; align-items:center; gap:16px; border-left:4px solid #C9A84C;">
+        <div style="font-size:36px;">📅</div>
+        <div>
+            <p style="font-size:28px; font-weight:700; color:#1B2A4A;">{{ reservas_hoy }}</p>
+            <p style="font-size:12.5px; color:#888; margin-top:2px;">Reservas de hoy</p>
+        </div>
+    </div>
+
+    <!-- Reservas activas -->
+    <div style="background:white; border-radius:12px; padding:22px; box-shadow:0 2px 10px rgba(0,0,0,0.07); display:flex; align-items:center; gap:16px; border-left:4px solid #1976d2;">
+        <div style="font-size:36px;">✅</div>
+        <div>
+            <p style="font-size:28px; font-weight:700; color:#1976d2;">{{ reservas_activas }}</p>
+            <p style="font-size:12.5px; color:#888; margin-top:2px;">Reservas activas</p>
+        </div>
+    </div>
+
+    <!-- Hospedados ahora -->
+    <div style="background:white; border-radius:12px; padding:22px; box-shadow:0 2px 10px rgba(0,0,0,0.07); display:flex; align-items:center; gap:16px; border-left:4px solid #2e7d32;">
+        <div style="font-size:36px;">🛎️</div>
+        <div>
+            <p style="font-size:28px; font-weight:700; color:#2e7d32;">{{ hospedados_ahora }}</p>
+            <p style="font-size:12.5px; color:#888; margin-top:2px;">Huéspedes en el hotel</p>
+        </div>
+    </div>
+
+    <!-- Ingresos del mes -->
+    <div style="background:white; border-radius:12px; padding:22px; box-shadow:0 2px 10px rgba(0,0,0,0.07); display:flex; align-items:center; gap:16px; border-left:4px solid #7b1fa2;">
+        <div style="font-size:36px;">💰</div>
+        <div>
+            <p style="font-size:28px; font-weight:700; color:#7b1fa2;">${{ "{:,.2f}".format(ingresos_mes | float) }}</p>
+            <p style="font-size:12.5px; color:#888; margin-top:2px;">Ingresos del mes</p>
+        </div>
+    </div>
+
+    <!-- Total clientes -->
+    <div style="background:white; border-radius:12px; padding:22px; box-shadow:0 2px 10px rgba(0,0,0,0.07); display:flex; align-items:center; gap:16px; border-left:4px solid #00796b;">
+        <div style="font-size:36px;">👥</div>
+        <div>
+            <p style="font-size:28px; font-weight:700; color:#00796b;">{{ total_clientes }}</p>
+            <p style="font-size:12.5px; color:#888; margin-top:2px;">Clientes registrados</p>
+        </div>
+    </div>
+
+    <!-- Cancelaciones -->
+    <div style="background:white; border-radius:12px; padding:22px; box-shadow:0 2px 10px rgba(0,0,0,0.07); display:flex; align-items:center; gap:16px; border-left:4px solid #c62828;">
+        <div style="font-size:36px;">❌</div>
+        <div>
+            <p style="font-size:28px; font-weight:700; color:#c62828;">{{ cancelaciones }} <span style="font-size:16px;">({{ porc_cancelaciones }}%)</span></p>
+            <p style="font-size:12.5px; color:#888; margin-top:2px;">Cancelaciones este mes</p>
+        </div>
+    </div>
+
+</div>
+
+<!-- ── Gráfica + Acciones rápidas ── -->
+<div style="display:grid; grid-template-columns:1fr 1fr; gap:18px;">
+
+    <!-- Gráfica de habitaciones -->
+    <div style="background:white; border-radius:12px; padding:24px; box-shadow:0 2px 10px rgba(0,0,0,0.07);">
+        <p style="font-size:15px; font-weight:700; color:#1B2A4A; margin-bottom:18px;">
+            🛏️ Distribución de Habitaciones
+        </p>
+        {% if valores_hab %}
+            <canvas id="graficaHabitaciones" height="220"></canvas>
+        {% else %}
+            <p style="text-align:center; color:#aaa; padding:40px; font-style:italic;">
+                No hay habitaciones registradas.
+            </p>
+        {% endif %}
+    </div>
+
+    <!-- Acciones rápidas -->
+    <div style="background:white; border-radius:12px; padding:24px; box-shadow:0 2px 10px rgba(0,0,0,0.07);">
+        <p style="font-size:15px; font-weight:700; color:#1B2A4A; margin-bottom:18px;">
+            ⚡ Acciones Rápidas
+        </p>
+        <div style="display:flex; flex-direction:column; gap:10px;">
+            <a href="#" class="btn btn-primary">📅 Nueva Reserva</a>
+            <a href="#" class="btn btn-secondary">👥 Nuevo Cliente</a>
+            <a href="#" class="btn btn-secondary">🛏️ Nueva Habitación</a>
+            <a href="#" class="btn btn-secondary">💳 Registrar Pago</a>
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    {% if valores_hab %}
+    const ctx = document.getElementById('graficaHabitaciones').getContext('2d');
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: {{ labels_hab | tojson }},
+            datasets: [{
+                data: {{ valores_hab | tojson }},
+                backgroundColor: [
+                    '#2e7d32', // disponible
+                    '#880e4f', // ocupada
+                    '#0d47a1', // reservada
+                    '#e65100', // mantenimiento
+                    '#6a1b9a', // limpieza
+                    '#4e342e'  // bloqueada
+                ],
+                borderWidth: 2,
+                borderColor: '#fff'
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        font: { size: 12 },
+                        padding: 16
+                    }
+                }
+            }
+        }
+    });
+    {% endif %}
+</script>
+{% endblock %}
+
+
