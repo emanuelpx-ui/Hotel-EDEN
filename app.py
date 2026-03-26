@@ -59,7 +59,7 @@ app.register_blueprint(public_bp)
 
 @app.route('/inicio')
 def index():
-    return redirect('public/index.html')
+    return redirect(url_for('public.index'))
 
 if __name__ == '__main__':
     app.run(debug=True)
