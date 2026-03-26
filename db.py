@@ -14,7 +14,7 @@ DB_CONFIG = {
 }
 
 def get_db_connection():
-    conn = psycopg2.connect(**DB_CONFIG)
+    conn = psycopg2.connect(os.getenv('DATABASE_URL'), **DB_CONFIG)
     conn.autocommit = False
     return conn
 
