@@ -57,7 +57,7 @@ app.register_blueprint(turnos_bp)
 app.register_blueprint(logs_bp)
 app.register_blueprint(public_bp)
 
-@app.route('/')
+@app.route('/inicio')
 def index():
     return redirect('public/index.html')
 
