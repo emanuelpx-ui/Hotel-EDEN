@@ -57,9 +57,9 @@ app.register_blueprint(turnos_bp)
 app.register_blueprint(logs_bp)
 app.register_blueprint(public_bp)
 
-@app.route('/' , methods=["GET", "HEAD"])
+@app.route('/')
 def index():
-    return redirect(url_for('public.index'))
+    return redirect('public/index')
 
 if __name__ == '__main__':
     app.run(debug=True)
