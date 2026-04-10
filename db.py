@@ -5,17 +5,20 @@ from dotenv import load_dotenv
 
 load_dotenv(encoding='utf-8')
 
-DB_CONFIG = {
-    'host':     os.getenv('DB_HOST', 'localhost'),
-    'port':     int(os.getenv('DB_PORT', 5432)),
-    'dbname':   os.getenv('DB_NAME', 'BDhotel'),
-    'user':     os.getenv('DB_USER', 'postgres'),
-    'password': os.getenv('DB_PASSWORD', '')
-}
-
 def get_db_connection():
-    conn = psycopg2.connect(os.getenv('postgresql://hotel_eden_db_user:pc6IrPil5lWZx4jQCYuDxbYFbIoXIgYv@dpg-d7c0848sfn5c73b2qb9g-a/hotel_eden_db
-'), **DB_CONFIG)
+    database_url = os.getenv('DATABASE_URL')
+
+    if database_url:
+        conn = psycopg2.connect(database_url)
+    else:
+        conn = psycopg2.connect(
+            host     = os.getenv('DB_HOST', 'localhost'),
+            port     = int(os.getenv('DB_PORT', 5432)),
+            dbname   = os.getenv('DB_NAME', 'BDhotel'),
+            user     = os.getenv('DB_USER', 'postgres'),
+            password = os.getenv('DB_PASSWORD', '')
+        )
+
     conn.autocommit = False
     return conn
 
