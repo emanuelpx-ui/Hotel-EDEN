@@ -14,7 +14,8 @@ DB_CONFIG = {
 }
 
 def get_db_connection():
-    conn = psycopg2.connect(os.getenv('DATABASE_URL'), **DB_CONFIG)
+    conn = psycopg2.connect(os.getenv('//hotel_eden_db_user:pc6IrPil5lWZx4jQCYuDxbYFbIoXIgYv@dpg-d7c0848sfn5c73b2qb9g-a/hotel_eden_db
+'), **DB_CONFIG)
     conn.autocommit = False
     return conn
 
