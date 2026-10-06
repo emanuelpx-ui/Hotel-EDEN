@@ -1,0 +1,24 @@
+# Control de versiones
+.git
+.gitignore
+
+# Entornos virtuales de Python
+venv/
+env/
+
+# Caché y compilados
+__pycache__/
+*.pyc
+*.pyo
+
+# Variables de entorno (¡CRÍTICO!)
+.env
+
+# Archivos locales de base de datos
+*.sqlite3
+*.db
+
+# Archivos de configuración y documentación que el contenedor no necesita para correr
+README.md
+docker-compose.yml
+.dockerignore

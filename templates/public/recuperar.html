@@ -1,0 +1,132 @@
+{% extends "public/base.html" %}
+{% block title %}Recuperar Contraseña — Hotel Eden{% endblock %}
+
+{% block content %}
+
+<div style="background:linear-gradient(135deg, #0f1e35 0%, #1B2A4A 100%);
+            padding:50px 48px; text-align:center;">
+    <h1 style="font-size:34px; font-weight:800; color:white;">
+        🔑 Recuperar <span style="color:#C9A84C;">Contraseña</span>
+    </h1>
+    <p style="color:rgba(255,255,255,0.6); margin-top:10px; font-size:15px;">
+        Ingresa tu usuario y te generaremos un token de recuperación
+    </p>
+</div>
+
+<div class="section">
+    <div class="form-card">
+
+        {% if not token %}
+        <!-- Paso 1: Solicitar token -->
+        <h2 style="font-size:20px; font-weight:700; color:#1B2A4A; margin-bottom:6px;">
+            Paso 1 — Generar Token
+        </h2>
+        <p style="font-size:13.5px; color:#888; margin-bottom:24px;">
+            Ingresa tu nombre de usuario para generar un token de recuperación.
+        </p>
+
+        <form method="POST">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="form-grid">
+                <div class="form-group full">
+                    <label style="font-size:13px; font-weight:600; color:#1B2A4A;
+                                  text-transform:uppercase; letter-spacing:0.4px;">
+                        Nombre de Usuario <span style="color:#c62828;">*</span>
+                    </label>
+                    <input type="text" name="username" required
+                           placeholder="Ej. admin"
+                           style="padding:11px 14px; border:1.5px solid #dde1e7;
+                                  border-radius:8px; font-size:14px; outline:none;
+                                  width:100%; transition:all 0.2s;"
+                           onfocus="this.style.borderColor='#C9A84C'"
+                           onblur="this.style.borderColor='#dde1e7'">
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-gold"
+                        style="font-size:15px; padding:12px 28px;">
+                    🔑 Generar Token
+                </button>
+                <a href="{{ url_for('auth.cliente_login') }}"
+                   class="btn btn-outline-gold">
+                    ← Volver al Login
+                </a>
+            </div>
+        </form>
+
+        {% else %}
+        <!-- Paso 2: Mostrar token generado -->
+        <h2 style="font-size:20px; font-weight:700; color:#1B2A4A; margin-bottom:6px;">
+            ✅ Token Generado
+        </h2>
+        <p style="font-size:13.5px; color:#888; margin-bottom:24px;">
+            Copia este token y úsalo en el formulario de restablecimiento.
+            <strong style="color:#c62828;">Expira en 30 minutos.</strong>
+        </p>
+
+        <!-- Token destacado -->
+        <div style="background:#f0f4ff; border-radius:12px; padding:24px;
+                    border:2px dashed #C9A84C; margin-bottom:24px; text-align:center;">
+            <p style="font-size:12px; color:#888; margin-bottom:8px;
+                      text-transform:uppercase; letter-spacing:1px;">
+                Tu token de recuperación
+            </p>
+            <p id="token-text"
+               style="font-family:'Courier New', monospace; font-size:14px;
+                      font-weight:700; color:#1B2A4A; word-break:break-all;
+                      background:white; padding:14px; border-radius:8px;
+                      border:1px solid #dde1e7; margin-bottom:12px;">
+                {{ token }}
+            </p>
+            <button onclick="copiarToken()"
+                    style="background:#1B2A4A; color:#C9A84C; border:none;
+                           padding:8px 20px; border-radius:8px; cursor:pointer;
+                           font-weight:600; font-size:13px;">
+                📋 Copiar Token
+            </button>
+            <p id="msg-copiado"
+               style="display:none; color:#2e7d32; font-size:13px; margin-top:8px;">
+                ✅ Token copiado al portapapeles
+            </p>
+        </div>
+
+        <div style="background:#fff8e1; border-radius:10px; padding:14px;
+                    border-left:4px solid #C9A84C; margin-bottom:24px;">
+            <p style="font-size:13.5px; color:#7f6000;">
+                ⚠️ <strong>Importante:</strong> Guarda este token ahora.
+                No se mostrará nuevamente y expira en 30 minutos.
+            </p>
+        </div>
+
+        <div class="form-actions">
+            <a href="{{ url_for('recuperacion.restablecer') }}"
+               class="btn btn-gold" style="font-size:15px; padding:12px 28px;">
+                → Ir a Restablecer Contraseña
+            </a>
+            <a href="{{ url_for('auth.cliente_login') }}"
+               class="btn btn-outline-gold">
+                ← Volver al Login
+            </a>
+        </div>
+
+        {% endif %}
+
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+function copiarToken() {
+    const token = document.getElementById('token-text').textContent.trim();
+    navigator.clipboard.writeText(token).then(() => {
+        document.getElementById('msg-copiado').style.display = 'block';
+        setTimeout(() => {
+            document.getElementById('msg-copiado').style.display = 'none';
+        }, 3000);
+    });
+}
+</script>
+{% endblock %}
