@@ -17,6 +17,7 @@ from routes.empleados import empleados_bp
 from routes.turnos import turnos_bp
 from routes.logs import logs_bp
 from routes.public import public_bp
+from routes.recuperacion import recuperacion_bp
 
 app = Flask(__name__)
 app.secret_key = os.getenv('SECRET_KEY', 'fallback_secret_key')
@@ -56,6 +57,8 @@ app.register_blueprint(empleados_bp)
 app.register_blueprint(turnos_bp)
 app.register_blueprint(logs_bp)
 app.register_blueprint(public_bp)
+app.register_blueprint(recuperacion_bp)
+
 
 @app.route('/')
 def index():

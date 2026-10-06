@@ -219,9 +219,18 @@
             <button type="submit" class="btn-login">Entrar</button>
         </form>
 
+            <div style="text-align:center; margin-top:16px;">
+                <a href="{{ url_for('recuperacion.solicitar') }}"
+                    style="font-size:13px; color:#888; text-decoration:none;">
+                    ¿Olvidaste tu contraseña?
+                    <span style="color:#C9A84C; font-weight:600;">Recupérala aquí</span>
+                </a>
+            </div>
+
         <div class="register-link">
         ¿No tienes cuenta? <a href="{{ url_for('public.registro') }}">Regístrate aquí</a>
         </div>
+
 
         <p class="login-footer">© 2026 Hotel Eden — Tu hogar lejos de casa</p>
     </div>

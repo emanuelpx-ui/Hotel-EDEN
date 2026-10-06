@@ -1,0 +1,139 @@
+{% extends "public/base.html" %}
+{% block title %}Restablecer Contraseña — Hotel Eden{% endblock %}
+
+{% block content %}
+
+<div style="background:linear-gradient(135deg, #0f1e35 0%, #1B2A4A 100%);
+            padding:50px 48px; text-align:center;">
+    <h1 style="font-size:34px; font-weight:800; color:white;">
+        🔐 Restablecer <span style="color:#C9A84C;">Contraseña</span>
+    </h1>
+    <p style="color:rgba(255,255,255,0.6); margin-top:10px; font-size:15px;">
+        Ingresa tu usuario, el token recibido y tu nueva contraseña
+    </p>
+</div>
+
+<div class="section">
+    <div class="form-card">
+
+        <h2 style="font-size:20px; font-weight:700; color:#1B2A4A; margin-bottom:6px;">
+            Paso 2 — Nueva Contraseña
+        </h2>
+        <p style="font-size:13.5px; color:#888; margin-bottom:24px;">
+            ¿No tienes token?
+            <a href="{{ url_for('recuperacion.solicitar') }}"
+               style="color:#C9A84C; font-weight:600; text-decoration:none;">
+               Generar token aquí
+            </a>
+        </p>
+
+        <form method="POST" id="form-restablecer">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="form-grid">
+
+                <div class="form-group full">
+                    <label style="font-size:13px; font-weight:600; color:#1B2A4A;
+                                  text-transform:uppercase; letter-spacing:0.4px;">
+                        Nombre de Usuario <span style="color:#c62828;">*</span>
+                    </label>
+                    <input type="text" name="username" required
+                           placeholder="Ej. admin"
+                           style="padding:11px 14px; border:1.5px solid #dde1e7;
+                                  border-radius:8px; font-size:14px; outline:none;
+                                  width:100%; transition:all 0.2s;"
+                           onfocus="this.style.borderColor='#C9A84C'"
+                           onblur="this.style.borderColor='#dde1e7'">
+                </div>
+
+                <div class="form-group full">
+                    <label style="font-size:13px; font-weight:600; color:#1B2A4A;
+                                  text-transform:uppercase; letter-spacing:0.4px;">
+                        Token de Recuperación <span style="color:#c62828;">*</span>
+                    </label>
+                    <input type="text" name="token" required
+                           placeholder="Pega aquí el token generado"
+                           style="padding:11px 14px; border:1.5px solid #dde1e7;
+                                  border-radius:8px; font-size:14px; outline:none;
+                                  width:100%; font-family:'Courier New', monospace;
+                                  transition:all 0.2s;"
+                           onfocus="this.style.borderColor='#C9A84C'"
+                           onblur="this.style.borderColor='#dde1e7'">
+                </div>
+
+                <div class="form-group">
+                    <label style="font-size:13px; font-weight:600; color:#1B2A4A;
+                                  text-transform:uppercase; letter-spacing:0.4px;">
+                        Nueva Contraseña <span style="color:#c62828;">*</span>
+                    </label>
+                    <input type="password" name="password" id="password" required
+                           placeholder="Mínimo 6 caracteres"
+                           style="padding:11px 14px; border:1.5px solid #dde1e7;
+                                  border-radius:8px; font-size:14px; outline:none;
+                                  width:100%; transition:all 0.2s;"
+                           onfocus="this.style.borderColor='#C9A84C'"
+                           onblur="this.style.borderColor='#dde1e7'">
+                </div>
+
+                <div class="form-group">
+                    <label style="font-size:13px; font-weight:600; color:#1B2A4A;
+                                  text-transform:uppercase; letter-spacing:0.4px;">
+                        Confirmar Contraseña <span style="color:#c62828;">*</span>
+                    </label>
+                    <input type="password" id="confirmar" name="confirmar" required
+                           placeholder="Repite tu contraseña"
+                           style="padding:11px 14px; border:1.5px solid #dde1e7;
+                                  border-radius:8px; font-size:14px; outline:none;
+                                  width:100%; transition:all 0.2s;"
+                           onfocus="this.style.borderColor='#C9A84C'"
+                           onblur="this.style.borderColor='#dde1e7'">
+                    <p id="msg-pass" style="font-size:12.5px; margin-top:4px;"></p>
+                </div>
+
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-gold"
+                        style="font-size:15px; padding:12px 28px;">
+                    🔐 Restablecer Contraseña
+                </button>
+                <a href="{{ url_for('auth.cliente_login') }}"
+                   class="btn btn-outline-gold">
+                    ← Volver al Login
+                </a>
+            </div>
+        </form>
+
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const pass     = document.getElementById('password');
+    const confirmar = document.getElementById('confirmar');
+    const msg      = document.getElementById('msg-pass');
+
+    function verificar() {
+        if (!confirmar.value) { msg.textContent = ''; return; }
+        if (pass.value === confirmar.value) {
+            msg.textContent = '✅ Las contraseñas coinciden';
+            msg.style.color = '#2e7d32';
+        } else {
+            msg.textContent = '❌ Las contraseñas no coinciden';
+            msg.style.color = '#c62828';
+        }
+    }
+
+    pass.addEventListener('input', verificar);
+    confirmar.addEventListener('input', verificar);
+
+    document.getElementById('form-restablecer').addEventListener('submit', e => {
+        if (pass.value !== confirmar.value) {
+            e.preventDefault();
+            alert('Las contraseñas no coinciden.');
+            confirmar.focus();
+        }
+    });
+</script>
+{% endblock %}
